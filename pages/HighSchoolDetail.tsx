@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, MapPin, Phone, GraduationCap, TrendingUp, School, Edit2, Plus, Trash2, X, Save } from 'lucide-react';
+import { ChevronLeft, MapPin, Phone, GraduationCap, TrendingUp, School, Edit2, Plus, Trash2, X, Save, FileSpreadsheet, Clipboard, Upload, RefreshCw } from 'lucide-react';
 import { HighSchool, AdmissionScore } from '../types';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -33,6 +33,9 @@ export const HighSchoolDetail: React.FC = () => {
   // State for scores to allow editing
   const [scores, setScores] = useState<AdmissionScore[]>(MOCK_SCORES);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [modalTab, setModalTab] = useState<'manual' | 'import'>('manual');
+  const [importText, setImportText] = useState('');
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   // New Score Form State
   const [newScore, setNewScore] = useState<AdmissionScore>({
@@ -48,15 +51,70 @@ export const HighSchoolDetail: React.FC = () => {
   const chartData = [...scores].sort((a, b) => a.year - b.year);
 
   const handleDeleteScore = (index: number) => {
-    const updatedScores = scores.filter((_, i) => i !== index);
-    setScores(updatedScores);
+    if (confirm('确认删除该记录吗？')) {
+        const updatedScores = scores.filter((_, i) => i !== index);
+        setScores(updatedScores);
+    }
   };
 
-  const handleAddScore = () => {
+  const handleEditScore = (index: number, score: AdmissionScore) => {
+    setEditingIndex(index);
+    setNewScore(score);
+    setModalTab('manual');
+  };
+
+  const handleSaveScore = () => {
     if (newScore.score > 0 && newScore.year > 2000) {
-      setScores([...scores, newScore]);
+      if (editingIndex !== null) {
+          // Update
+          const updated = [...scores];
+          updated[editingIndex] = newScore;
+          setScores(updated);
+          setEditingIndex(null);
+      } else {
+          // Add
+          setScores([...scores, newScore]);
+      }
       setNewScore({ year: new Date().getFullYear(), batch: '统招批次', score: 0, rankRequirement: 0 });
     }
+  };
+
+  const handleBatchImport = () => {
+      if (!importText.trim()) return;
+      
+      const rows = importText.trim().split('\n');
+      const importedScores: AdmissionScore[] = [];
+
+      rows.forEach(row => {
+          // Format: Year, Batch, Score, Rank
+          const cols = row.split(/,|\t/).map(c => c.trim());
+          if (cols.length >= 3) {
+              importedScores.push({
+                  year: parseInt(cols[0]) || 2024,
+                  batch: cols[1] || '统招批次',
+                  score: parseInt(cols[2]) || 0,
+                  rankRequirement: parseInt(cols[3]) || 0
+              });
+          }
+      });
+
+      if (importedScores.length > 0) {
+          setScores([...scores, ...importedScores]);
+          setImportText('');
+          alert(`成功导入 ${importedScores.length} 条数据`);
+          setModalTab('manual');
+      } else {
+          alert('导入失败，请检查格式');
+      }
+  };
+
+  const handleSimulateSync = () => {
+      // Mock sync
+      setScores([...scores, 
+        { year: 2020, batch: '统招批次', score: 638, rankRequirement: 1400 },
+        { year: 2019, batch: '统招批次', score: 635, rankRequirement: 1450 }
+      ]);
+      alert('已同步历史数据');
   };
 
   return (
@@ -226,74 +284,155 @@ export const HighSchoolDetail: React.FC = () => {
                 </button>
              </div>
              
+             {/* Tabs */}
+             <div className="flex border-b border-slate-100 px-6">
+                 <button 
+                    onClick={() => setModalTab('manual')}
+                    className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${modalTab === 'manual' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                 >
+                    手动录入/管理
+                 </button>
+                 <button 
+                    onClick={() => setModalTab('import')}
+                    className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${modalTab === 'import' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                 >
+                    <FileSpreadsheet size={16}/> 批量导入
+                 </button>
+             </div>
+             
              <div className="p-6 overflow-y-auto flex-1">
-                {/* Add New Row */}
-                <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-6">
-                    <h4 className="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2"><Plus size={16}/> 添加新记录</h4>
-                    <div className="grid grid-cols-5 gap-3">
-                        <input 
-                          type="number" placeholder="年份" 
-                          className="px-3 py-2 border border-slate-200 rounded-md text-sm"
-                          value={newScore.year}
-                          onChange={e => setNewScore({...newScore, year: Number(e.target.value)})}
-                        />
-                        <select 
-                          className="px-3 py-2 border border-slate-200 rounded-md text-sm col-span-2"
-                          value={newScore.batch}
-                          onChange={e => setNewScore({...newScore, batch: e.target.value})}
-                        >
-                            <option>统招批次</option>
-                            <option>提前批</option>
-                            <option>校额到校</option>
-                            <option>国际部</option>
-                        </select>
-                        <input 
-                          type="number" placeholder="分数" 
-                          className="px-3 py-2 border border-slate-200 rounded-md text-sm"
-                          value={newScore.score || ''}
-                          onChange={e => setNewScore({...newScore, score: Number(e.target.value)})}
-                        />
-                        <button 
-                          onClick={handleAddScore}
-                          disabled={!newScore.score}
-                          className="bg-brand-600 text-white rounded-md text-sm font-medium hover:bg-brand-700 disabled:opacity-50"
-                        >
-                          添加
-                        </button>
-                    </div>
-                </div>
+                {modalTab === 'manual' && (
+                    <>
+                        <div className={`p-4 rounded-lg border mb-6 transition-colors ${editingIndex !== null ? 'bg-amber-50 border-amber-200' : 'bg-slate-50 border-slate-200'}`}>
+                            <h4 className={`text-sm font-bold mb-3 flex items-center gap-2 ${editingIndex !== null ? 'text-amber-700' : 'text-slate-700'}`}>
+                                {editingIndex !== null ? <Edit2 size={16}/> : <Plus size={16}/>} 
+                                {editingIndex !== null ? '编辑记录' : '添加新记录'}
+                            </h4>
+                            <div className="grid grid-cols-5 gap-3">
+                                <input 
+                                type="number" placeholder="年份" 
+                                className="px-3 py-2 border border-slate-200 rounded-md text-sm"
+                                value={newScore.year}
+                                onChange={e => setNewScore({...newScore, year: Number(e.target.value)})}
+                                />
+                                <select 
+                                className="px-3 py-2 border border-slate-200 rounded-md text-sm col-span-2"
+                                value={newScore.batch}
+                                onChange={e => setNewScore({...newScore, batch: e.target.value})}
+                                >
+                                    <option>统招批次</option>
+                                    <option>提前批</option>
+                                    <option>校额到校</option>
+                                    <option>国际部</option>
+                                </select>
+                                <input 
+                                type="number" placeholder="分数" 
+                                className="px-3 py-2 border border-slate-200 rounded-md text-sm"
+                                value={newScore.score || ''}
+                                onChange={e => setNewScore({...newScore, score: Number(e.target.value)})}
+                                />
+                                <button 
+                                onClick={handleSaveScore}
+                                disabled={!newScore.score}
+                                className={`text-white rounded-md text-sm font-medium transition-colors disabled:opacity-50 ${editingIndex !== null ? 'bg-amber-600 hover:bg-amber-700' : 'bg-brand-600 hover:bg-brand-700'}`}
+                                >
+                                {editingIndex !== null ? '更新' : '添加'}
+                                </button>
+                            </div>
+                            {editingIndex !== null && (
+                                <div className="mt-2 text-right">
+                                    <button 
+                                        onClick={() => { setEditingIndex(null); setNewScore({ year: new Date().getFullYear(), batch: '统招批次', score: 0, rankRequirement: 0 }); }}
+                                        className="text-xs text-slate-500 hover:text-slate-700 underline"
+                                    >
+                                        取消编辑
+                                    </button>
+                                </div>
+                            )}
+                        </div>
 
-                {/* Edit List */}
-                <h4 className="text-sm font-bold text-slate-700 mb-3">现有记录 ({scores.length})</h4>
-                <div className="border border-slate-200 rounded-lg overflow-hidden">
-                   <table className="w-full text-left">
-                       <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
-                           <tr>
-                               <th className="px-4 py-3">年份</th>
-                               <th className="px-4 py-3">批次</th>
-                               <th className="px-4 py-3">分数</th>
-                               <th className="px-4 py-3 text-right">操作</th>
-                           </tr>
-                       </thead>
-                       <tbody className="divide-y divide-slate-100">
-                           {[...scores].sort((a,b) => b.year - a.year).map((item, idx) => (
-                               <tr key={idx} className="hover:bg-slate-50">
-                                   <td className="px-4 py-3 text-sm font-medium text-slate-900">{item.year}</td>
-                                   <td className="px-4 py-3 text-sm text-slate-600">{item.batch}</td>
-                                   <td className="px-4 py-3 text-sm font-bold text-slate-900">{item.score}</td>
-                                   <td className="px-4 py-3 text-right">
-                                       <button 
-                                         onClick={() => handleDeleteScore(scores.indexOf(item))}
-                                         className="text-red-400 hover:text-red-600 p-1 hover:bg-red-50 rounded"
-                                       >
-                                           <Trash2 size={16}/>
-                                       </button>
-                                   </td>
-                               </tr>
-                           ))}
-                       </tbody>
-                   </table>
-                </div>
+                        {/* Edit List */}
+                        <h4 className="text-sm font-bold text-slate-700 mb-3">现有记录 ({scores.length})</h4>
+                        <div className="border border-slate-200 rounded-lg overflow-hidden max-h-[400px] overflow-y-auto">
+                        <table className="w-full text-left">
+                            <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
+                                <tr>
+                                    <th className="px-4 py-3">年份</th>
+                                    <th className="px-4 py-3">批次</th>
+                                    <th className="px-4 py-3">分数</th>
+                                    <th className="px-4 py-3 text-right">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {[...scores].sort((a,b) => b.year - a.year).map((item, idx) => {
+                                    const actualIndex = scores.indexOf(item); // For mock data without IDs, careful with index
+                                    return (
+                                        <tr key={idx} className={`hover:bg-slate-50 ${editingIndex === actualIndex ? 'bg-amber-50' : ''}`}>
+                                            <td className="px-4 py-3 text-sm font-medium text-slate-900">{item.year}</td>
+                                            <td className="px-4 py-3 text-sm text-slate-600">{item.batch}</td>
+                                            <td className="px-4 py-3 text-sm font-bold text-slate-900">{item.score}</td>
+                                            <td className="px-4 py-3 text-right flex justify-end gap-2">
+                                                <button 
+                                                    onClick={() => handleEditScore(actualIndex, item)}
+                                                    className="text-brand-500 hover:text-brand-700 p-1 hover:bg-brand-50 rounded"
+                                                    title="编辑"
+                                                >
+                                                    <Edit2 size={16}/>
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleDeleteScore(actualIndex)}
+                                                    className="text-red-400 hover:text-red-600 p-1 hover:bg-red-50 rounded"
+                                                    title="删除"
+                                                >
+                                                    <Trash2 size={16}/>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                        </div>
+                    </>
+                )}
+
+                {modalTab === 'import' && (
+                     <div className="space-y-6">
+                        <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 text-sm text-blue-800">
+                            <h5 className="font-bold flex items-center gap-2 mb-2"><Clipboard size={16}/> 使用说明</h5>
+                            <p className="mb-2">请直接粘贴 CSV 数据，格式顺序如下：</p>
+                            <code className="bg-white px-2 py-1 rounded border border-blue-200 block w-full mb-2">
+                                年份, 批次, 分数, 排名(可选)
+                            </code>
+                            <p className="text-xs text-blue-600">例如：2024, 统招批次, 658, 1200</p>
+                        </div>
+
+                        <div>
+                            <textarea 
+                                className="w-full h-48 p-4 border border-slate-200 rounded-lg text-sm font-mono focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                                placeholder="在此处粘贴文本..."
+                                value={importText}
+                                onChange={(e) => setImportText(e.target.value)}
+                            ></textarea>
+                        </div>
+
+                        <div className="flex gap-4">
+                            <button 
+                                onClick={handleBatchImport}
+                                disabled={!importText.trim()}
+                                className="flex-1 bg-brand-600 text-white py-2 rounded-lg font-medium hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                <Upload size={18}/> 执行导入
+                            </button>
+                             <button 
+                                onClick={handleSimulateSync}
+                                className="flex-1 bg-slate-100 text-slate-700 border border-slate-200 py-2 rounded-lg font-medium hover:bg-slate-200 flex items-center justify-center gap-2"
+                            >
+                                <RefreshCw size={18}/> 同步市招办数据
+                            </button>
+                        </div>
+                    </div>
+                )}
              </div>
 
              <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">

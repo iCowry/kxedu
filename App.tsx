@@ -17,7 +17,10 @@ import { ClassManagement } from './pages/ClassManagement';
 import { ClassDetail } from './pages/ClassDetail';
 import { Rankings } from './pages/Rankings'; 
 import { UniversityDetail } from './pages/UniversityDetail'; 
-import { HighSchoolDetail } from './pages/HighSchoolDetail'; // New Import
+import { HighSchoolDetail } from './pages/HighSchoolDetail'; 
+import { Learning } from './pages/Learning'; 
+import { HomeworkDetail } from './pages/HomeworkDetail';
+import { ExamDetail } from './pages/ExamDetail';
 import { AIChatBot } from './components/AIChatBot';
 
 const App: React.FC = () => {
@@ -36,10 +39,14 @@ const App: React.FC = () => {
             
             <Route path="/rankings" element={<Rankings />} /> 
             <Route path="/rankings/university/:id" element={<UniversityDetail />} />
-            <Route path="/rankings/highschool/:id" element={<HighSchoolDetail />} /> {/* New Route */}
+            <Route path="/rankings/highschool/:id" element={<HighSchoolDetail />} />
 
             <Route path="/students" element={<StudentList />} />
             <Route path="/students/:id" element={<StudentDetail />} /> 
+            
+            <Route path="/learning" element={<Learning />} />
+            <Route path="/learning/homework/:id" element={<HomeworkDetail />} />
+            <Route path="/learning/exam/:id" element={<ExamDetail />} />
             
             <Route path="/staff" element={<StaffList />} />
             <Route path="/academic" element={<Academic />} />

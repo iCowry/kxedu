@@ -22,6 +22,9 @@ export interface Student {
   dob?: string;
   address?: string;
   parentContact?: string;
+  // New fields for rich profile
+  tags?: string[]; // e.g., 'Math Whiz', 'Student Council'
+  targetUniversities?: { name: string; probability: number }[];
 }
 
 export interface Course {
@@ -147,6 +150,18 @@ export interface AdmissionScore {
   rankRequirement?: number; // Optional rank requirement in the city/province
 }
 
+// New complex structure for University Admissions
+export interface UniAdmissionRecord {
+  id: string;
+  province: string; // e.g., 'Beijing', 'Henan'
+  year: number;
+  type: '物理组' | '历史组' | '理科' | '文科' | '综合改革'; 
+  batch: string; // e.g., '本科一批', '强基计划'
+  major: string; // e.g., '计算机科学与技术', '学校投档线'
+  score: number;
+  rank?: number;
+}
+
 export interface University {
   rank: number;
   name: string;
@@ -162,7 +177,7 @@ export interface University {
   establishedYear?: number; // 建校年份
   description?: string; // 学校简介
   subjectRatings?: { name: string; grade: 'A+' | 'A' | 'A-' | 'B+' | 'B' }[]; // 学科评估
-  admissionScores?: AdmissionScore[]; // 历年分数线
+  admissionRecords?: UniAdmissionRecord[]; // Updated field for detailed admission data
 }
 
 export interface HighSchool {
@@ -190,4 +205,77 @@ export interface ChatMessage {
   role: 'user' | 'model';
   text: string;
   timestamp: Date;
+}
+
+// --- NEW TYPES FOR RICH STUDENT PROFILE ---
+export interface StudentCourse {
+  id: string;
+  name: string;
+  teacher: string;
+  currentScore: number;
+  classAverage: number;
+  rank: number;
+  trend: 'up' | 'down' | 'stable';
+}
+
+export interface TimelineEvent {
+  id: string;
+  title: string;
+  timestamp: string;
+  type: 'Academic' | 'Behavior' | 'Activity' | 'Award';
+  description?: string;
+}
+
+export interface TeacherComment {
+  id: string;
+  teacher: string;
+  subject: string;
+  date: string;
+  content: string;
+  tags: string[];
+}
+
+// --- NEW TYPES FOR LEARNING MODULE ---
+export interface Homework {
+  id: string;
+  title: string;
+  subject: string;
+  targetClass: string;
+  deadline: string;
+  submittedCount: number;
+  totalCount: number;
+  status: 'Draft' | 'Published' | 'Graded';
+  publisher: string;
+  description?: string;
+}
+
+export interface HomeworkSubmission {
+  studentId: string;
+  studentName: string;
+  status: 'Submitted' | 'Late' | 'Missing' | 'Graded';
+  submitTime?: string;
+  score?: number;
+  comment?: string;
+  attachmentUrl?: string;
+}
+
+export interface Exam {
+  id: string;
+  name: string;
+  type: 'Quiz' | 'Midterm' | 'Final' | 'Mock';
+  subject: string; // 'All' for comprehensive
+  date: string;
+  targetGrades: string[];
+  status: 'Scheduled' | 'Ongoing' | 'Grading' | 'Completed';
+  avgScore?: number;
+  maxScore?: number;
+  minScore?: number;
+}
+
+export interface ExamResult {
+  studentId: string;
+  studentName: string;
+  score: number;
+  rank: number;
+  change: number; // Rank change
 }

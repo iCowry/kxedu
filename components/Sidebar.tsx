@@ -13,7 +13,8 @@ import {
   MessageCircle,
   Trophy,
   Layers,
-  ListOrdered
+  ListOrdered,
+  BookCheck
 } from 'lucide-react';
 import { NavItem } from '../types';
 
@@ -21,9 +22,10 @@ const navItems: NavItem[] = [
   { label: '总览 Dashboard', path: '/', icon: LayoutDashboard },
   { label: '租户管理 Tenants', path: '/tenants', icon: Building2 },
   { label: '组织架构 Org', path: '/organization', icon: Layers }, 
-  { label: '院校排行 Rankings', path: '/rankings', icon: ListOrdered }, // New Module
+  { label: '院校排行 Rankings', path: '/rankings', icon: ListOrdered }, 
   { label: '教职工管理 HR', path: '/staff', icon: Users },
   { label: '学生管理 Student', path: '/students', icon: GraduationCap },
+  { label: '学情管理 Learning', path: '/learning', icon: BookCheck }, // New Module
   { label: '教学教务 Academic', path: '/academic', icon: BookOpen },
   { label: '财务管理 Finance', path: '/finance', icon: CreditCard },
   { label: '校园行政 Campus', path: '/campus', icon: Building },
