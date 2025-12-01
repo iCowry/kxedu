@@ -1,4 +1,25 @@
+
 import React from 'react';
+
+// --- ROLE DEFINITIONS ---
+export type UserRole = 
+  | 'SuperAdmin'       // 平台超管
+  | 'TenantAdmin'      // 租户/校级管理员
+  | 'AcademicDirector' // 教务主任
+  | 'GradeDirector'    // 年级主任
+  | 'HomeroomTeacher'  // 班主任
+  | 'SubjectTeacher'   // 任课老师
+  | 'Student'          // 学生
+  | 'Parent';          // 家长
+
+export interface CurrentUser {
+  id: string;
+  name: string;
+  role: UserRole;
+  avatar?: string;
+  grade?: string; // For Directors/Teachers/Students
+  class?: string; // For Homeroom/Students
+}
 
 export interface Tenant {
   id: string;
@@ -200,6 +221,7 @@ export interface NavItem {
   label: string;
   path: string;
   icon: React.ComponentType<any>;
+  allowedRoles?: UserRole[]; // RBAC
 }
 
 export interface ChatMessage {
@@ -335,6 +357,57 @@ export interface Question {
   author: string;
   analysis?: string; // Detailed solution/analysis
   source?: string; // e.g. "2024 Beijing Final"
+}
+
+export interface ExamPaperStructure {
+  name: string; // e.g. "第一部分 选择题"
+  desc: string; // e.g. "共8小题，每题5分"
+  score: number;
+}
+
+export interface ExamPaper {
+  id: string;
+  title: string;
+  type: 'Mock' | 'Real' | 'Exercise'; // 模拟卷 / 真题卷 / 课后练习
+  year: number;
+  province?: string;
+  subject: string;
+  grade: string;
+  difficulty: number;
+  downloadCount: number;
+  createdAt: string;
+  // Extended fields
+  timeLimit?: number; // minutes
+  totalScore?: number;
+  structure?: ExamPaperStructure[];
+}
+
+export interface TextbookChapterResource {
+  id: string;
+  type: 'PPT' | 'Video' | 'PDF' | 'Word';
+  name: string;
+  size: string;
+}
+
+export interface TextbookChapter {
+  id: string;
+  title: string;
+  resources: TextbookChapterResource[];
+}
+
+export interface TextbookResource {
+  id: string;
+  title: string;
+  subject: string;
+  grade: string;
+  version: string; // e.g. 人教版, 北师大版
+  type: 'Guide' | 'Workbook' | 'MicroClass'; // 教材解读 / 练习册 / 微课
+  author: string;
+  downloadCount: number;
+  // Extended fields
+  coverImage?: string; // Mock URL or placeholder color
+  description?: string;
+  chapters?: TextbookChapter[];
 }
 
 // --- TEACHING & TUTORING TYPES ---

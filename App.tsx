@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './pages/Dashboard';
@@ -26,16 +27,56 @@ import { KnowledgeBase } from './pages/KnowledgeBase';
 import { QuestionBank } from './pages/QuestionBank';
 import { TeachingSupport } from './pages/TeachingSupport';
 import { AIChatBot } from './components/AIChatBot';
+import { CurrentUser, UserRole } from './types';
 
 const App: React.FC = () => {
+  // Global User State for RBAC Demo
+  const [currentUser, setCurrentUser] = useState<CurrentUser>({
+    id: 'ADMIN-001',
+    name: 'Super Admin',
+    role: 'SuperAdmin',
+    avatar: 'A'
+  });
+
+  const handleSwitchRole = (role: UserRole) => {
+    let newUser: CurrentUser = { id: 'U-001', name: 'User', role: role, avatar: 'U' };
+    
+    switch(role) {
+      case 'SuperAdmin':
+        newUser = { id: 'ADMIN-001', name: 'Super Admin', role: 'SuperAdmin', avatar: 'A' };
+        break;
+      case 'TenantAdmin':
+        newUser = { id: 'SCH-ADMIN', name: 'Principal Zhang', role: 'TenantAdmin', avatar: 'P' };
+        break;
+      case 'AcademicDirector':
+        newUser = { id: 'DIR-001', name: 'Director Li', role: 'AcademicDirector', avatar: 'D' };
+        break;
+      case 'HomeroomTeacher':
+        newUser = { id: 'TEA-001', name: 'Sarah Chen', role: 'HomeroomTeacher', avatar: 'S', class: 'Class 1' };
+        break;
+      case 'Student':
+        newUser = { id: 'STU-2023', name: 'Zhang Xiaoming', role: 'Student', avatar: 'Z', grade: 'Grade 10', class: 'Class 1' };
+        break;
+      case 'Parent':
+        newUser = { id: 'PAR-001', name: 'Mr. Zhang', role: 'Parent', avatar: 'P' };
+        break;
+      default:
+        newUser = { id: 'USER-001', name: 'Demo User', role: role, avatar: 'U' };
+    }
+    setCurrentUser(newUser);
+  };
+
   return (
     <Router>
       <div className="flex h-screen bg-slate-50">
-        <Sidebar />
+        {/* Pass user and switch handler to Sidebar */}
+        <Sidebar currentUser={currentUser} onSwitchRole={handleSwitchRole} />
         
         <main className="flex-1 ml-64 overflow-y-auto">
           <Routes>
-            <Route path="/" element={<Dashboard />} />
+            {/* Dashboard receives user props to render role-specific view */}
+            <Route path="/" element={<Dashboard currentUser={currentUser} />} />
+            
             <Route path="/tenants" element={<TenantList />} />
             
             <Route path="/organization" element={<ClassManagement />} />
