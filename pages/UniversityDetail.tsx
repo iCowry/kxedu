@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, MapPin, Award, BookOpen, FlaskConical, Users, Globe, Phone, History, TrendingUp, Edit2, Plus, Trash2, X, Save, Filter, FileSpreadsheet, Clipboard, RefreshCw, Upload } from 'lucide-react';
 import { University, UniAdmissionRecord } from '../types';
@@ -7,11 +7,72 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 // --- CONSTANTS ---
 const PROVINCES = ['北京', '河南', '江苏', '四川', '广东', '浙江'];
 const TYPES = ['物理组', '历史组', '理科', '文科', '综合改革'];
-const BATCHES = ['本科一批', '提前批', '国家专项'];
 
-// --- MOCK DETAIL DATA ---
-// Generate some realistic looking data for demonstration
-const GENERATE_MOCK_RECORDS = (): UniAdmissionRecord[] => {
+// --- DATA SOURCE FOR LOOKUP (Matches Rankings.tsx) ---
+const TOP_UNIVERSITIES_DB: Record<number, Partial<University>> = {
+  1: { name: '清华大学', englishName: 'Tsinghua University', location: '北京', tags: ['985', '211', '双一流'], logoColor: 'bg-purple-700' },
+  2: { name: '北京大学', englishName: 'Peking University', location: '北京', tags: ['985', '211', '双一流'], logoColor: 'bg-red-800' },
+  3: { name: '浙江大学', englishName: 'Zhejiang University', location: '杭州', tags: ['985', '211', '双一流'], logoColor: 'bg-blue-600' },
+  4: { name: '上海交通大学', englishName: 'Shanghai Jiao Tong University', location: '上海', tags: ['985', '211', '双一流'], logoColor: 'bg-red-900' },
+  5: { name: '复旦大学', englishName: 'Fudan University', location: '上海', tags: ['985', '211', '双一流'], logoColor: 'bg-blue-500' },
+  6: { name: '南京大学', englishName: 'Nanjing University', location: '南京', tags: ['985', '211', '双一流'], logoColor: 'bg-purple-600' },
+  7: { name: '中国科学技术大学', englishName: 'University of Science and Technology of China', location: '合肥', tags: ['985', '211', '双一流'], logoColor: 'bg-blue-700' },
+  8: { name: '华中科技大学', englishName: 'Huazhong University of Science and Technology', location: '武汉', tags: ['985', '211', '双一流'], logoColor: 'bg-red-600' },
+  9: { name: '武汉大学', englishName: 'Wuhan University', location: '武汉', tags: ['985', '211', '双一流'], logoColor: 'bg-green-600' },
+  10: { name: '西安交通大学', englishName: 'Xi\'an Jiaotong University', location: '西安', tags: ['985', '211', '双一流'], logoColor: 'bg-blue-800' },
+  11: { name: '哈尔滨工业大学', englishName: 'Harbin Institute of Technology', location: '哈尔滨', tags: ['985', '211', '双一流'], logoColor: 'bg-yellow-600' },
+  12: { name: '中山大学', englishName: 'Sun Yat-sen University', location: '广州', tags: ['985', '211', '双一流'], logoColor: 'bg-green-700' },
+  13: { name: '北京师范大学', englishName: 'Beijing Normal University', location: '北京', tags: ['985', '211', '双一流'], logoColor: 'bg-blue-500' },
+  14: { name: '四川大学', englishName: 'Sichuan University', location: '成都', tags: ['985', '211', '双一流'], logoColor: 'bg-red-500' },
+  15: { name: '东南大学', englishName: 'Southeast University', location: '南京', tags: ['985', '211', '双一流'], logoColor: 'bg-yellow-500' },
+  16: { name: '同济大学', englishName: 'Tongji University', location: '上海', tags: ['985', '211', '双一流'], logoColor: 'bg-cyan-600' },
+  17: { name: '北京航空航天大学', englishName: 'Beihang University', location: '北京', tags: ['985', '211', '双一流'], logoColor: 'bg-blue-600' },
+  18: { name: '中国人民大学', englishName: 'Renmin University of China', location: '北京', tags: ['985', '211', '双一流'], logoColor: 'bg-red-700' },
+  19: { name: '南开大学', englishName: 'Nankai University', location: '天津', tags: ['985', '211', '双一流'], logoColor: 'bg-purple-500' },
+  20: { name: '天津大学', englishName: 'Tianjin University', location: '天津', tags: ['985', '211', '双一流'], logoColor: 'bg-blue-600' },
+};
+
+// --- MOCK DETAIL DATA GENERATOR ---
+const getUniversityData = (rankId: number): University => {
+  const baseData = TOP_UNIVERSITIES_DB[rankId] || {
+    name: `第${rankId}大学`,
+    englishName: `University No.${rankId}`,
+    location: '中国',
+    tags: ['省属重点'],
+    logoColor: 'bg-slate-500'
+  };
+
+  // Generate some dynamic stats based on rank to make it look realistic
+  const score = +(100 - rankId * 0.5).toFixed(1);
+  const keyLabs = Math.max(1, Math.floor(20 - rankId * 0.3));
+  const aPlusCount = Math.max(0, Math.floor(25 - rankId * 0.5));
+  const academicians = Math.max(5, Math.floor(100 - rankId * 1.5));
+
+  return {
+    rank: rankId,
+    name: baseData.name!,
+    englishName: baseData.englishName!,
+    location: baseData.location!,
+    tags: baseData.tags!,
+    score: score > 60 ? score : 60,
+    logoColor: baseData.logoColor!,
+    keyLabs: keyLabs,
+    aPlusCount: aPlusCount,
+    academicians: academicians,
+    establishedYear: 1900 + (rankId % 100),
+    description: `${baseData.name!}是一所位于${baseData.location!}的顶尖学府。学校历史悠久，学科门类齐全，科研实力雄厚。在国家“双一流”建设中，学校始终走在前列，培养了大批优秀人才。`,
+    subjectRatings: [
+      { name: '计算机科学与技术', grade: rankId <= 5 ? 'A+' : 'A' },
+      { name: '数学', grade: rankId <= 10 ? 'A+' : 'A-' },
+      { name: '物理学', grade: rankId <= 15 ? 'A' : 'B+' },
+      { name: '材料科学', grade: 'A' },
+      { name: '临床医学', grade: 'A-' },
+    ],
+    admissionRecords: [] // Populated via state
+  };
+};
+
+const GENERATE_MOCK_RECORDS = (uniName: string): UniAdmissionRecord[] => {
     const records: UniAdmissionRecord[] = [];
     let idCounter = 1;
 
@@ -28,69 +89,56 @@ const GENERATE_MOCK_RECORDS = (): UniAdmissionRecord[] => {
         });
     };
 
-    // Beijing Data (Comprehensive Reform / Physics Group usually)
+    // Generate score base based on "rank" implied by name (simple hash for demo)
+    const baseScore = uniName === '清华大学' ? 685 : 
+                      uniName === '北京大学' ? 686 : 
+                      uniName === '浙江大学' ? 660 : 620;
+
+    // Beijing Data
     [2024, 2023, 2022].forEach(year => {
-        const base = year === 2024 ? 685 : year === 2023 ? 682 : 678;
-        addRecord('北京', year, '物理组', '学校投档线', base, 500); // Baseline
-        addRecord('北京', year, '物理组', '计算机科学与技术', base + 8, 200);
-        addRecord('北京', year, '物理组', '电子信息类', base + 5, 300);
-        addRecord('北京', year, '物理组', '自动化', base + 2, 450);
+        const volatility = (2024 - year) * 2;
+        const currentBase = baseScore - volatility;
         
-        const baseArt = base - 5;
-        addRecord('北京', year, '历史组', '学校投档线', baseArt, 600);
-        addRecord('北京', year, '历史组', '人文科学试验班', baseArt + 5, 300);
+        addRecord('北京', year, '物理组', '学校投档线', currentBase, 1500); 
+        addRecord('北京', year, '物理组', '计算机科学与技术', currentBase + 8, 500);
+        addRecord('北京', year, '物理组', '电子信息类', currentBase + 5, 800);
+        
+        const baseArt = currentBase - 10;
+        addRecord('北京', year, '历史组', '学校投档线', baseArt, 1200);
+        addRecord('北京', year, '历史组', '汉语言文学', baseArt + 5, 600);
     });
 
-    // Henan Data (Traditional Science/Arts)
+    // Henan Data
     [2024, 2023, 2022].forEach(year => {
-        const baseSci = year === 2024 ? 695 : year === 2023 ? 698 : 685; // Higher scores usually in Henan
-        addRecord('河南', year, '理科', '学校投档线', baseSci, 800);
-        addRecord('河南', year, '理科', '计算机科学与技术', baseSci + 10, 300);
-        addRecord('河南', year, '理科', '临床医学', baseSci + 12, 200);
-
-        const baseArts = baseSci - 20;
-        addRecord('河南', year, '文科', '学校投档线', baseArts, 500);
-        addRecord('河南', year, '文科', '法学', baseArts + 8, 200);
+        const currentBase = baseScore + 20; // Henan scores are higher
+        addRecord('河南', year, '理科', '学校投档线', currentBase, 2000);
+        addRecord('河南', year, '理科', '计算机类', currentBase + 10, 800);
+        addRecord('河南', year, '文科', '学校投档线', currentBase - 30, 1000);
     });
 
     return records;
 };
 
-const MOCK_UNI_DETAIL: University = {
-  rank: 1,
-  name: '清华大学',
-  englishName: 'Tsinghua University',
-  location: '北京 / Beijing',
-  tags: ['985', '211', '双一流', 'C9联盟'],
-  score: 98.5,
-  logoColor: 'bg-purple-700',
-  keyLabs: 13,
-  aPlusCount: 21,
-  academicians: 89,
-  establishedYear: 1911,
-  description: '清华大学（Tsinghua University），简称“清华”，位于北京市海淀区，是中华人民共和国教育部直属的全国重点大学，位列国家“双一流”、“985工程”、“211工程”，入选“2011计划”、“珠峰计划”、“强基计划”、“111计划”。学校前身清华学堂始建于1911年，校名“清华”源于校址“清华园”地名，是晚清政府设立的留美预备学校。',
-  subjectRatings: [
-    { name: '计算机科学与技术', grade: 'A+' },
-    { name: '控制科学与工程', grade: 'A+' },
-    { name: '材料科学与工程', grade: 'A+' },
-    { name: '动力工程及工程热物理', grade: 'A+' },
-    { name: '核科学与技术', grade: 'A+' },
-    { name: '生物学', grade: 'A+' },
-    { name: '力学', grade: 'A+' },
-    { name: '机械工程', grade: 'A+' },
-    { name: '仪器科学与技术', grade: 'A+' },
-  ],
-  admissionRecords: [] // Populated via state
-};
-
 export const UniversityDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>(); 
+  const rankId = parseInt(id || '1', 10);
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'overview' | 'subjects' | 'scores'>('overview');
   
+  // --- STATE FOR UNIVERSITY DATA ---
+  // Initialize with dynamic data based on ID
+  const [uni, setUni] = useState<University>(getUniversityData(rankId));
+
   // --- STATE FOR ADMISSION RECORDS ---
-  const [records, setRecords] = useState<UniAdmissionRecord[]>(GENERATE_MOCK_RECORDS());
-  
+  const [records, setRecords] = useState<UniAdmissionRecord[]>([]);
+
+  // Initialize records when component mounts or ID changes
+  useEffect(() => {
+    const newUniData = getUniversityData(rankId);
+    setUni(newUniData);
+    setRecords(GENERATE_MOCK_RECORDS(newUniData.name));
+  }, [rankId]);
+
   // Filters
   const [selectedProvince, setSelectedProvince] = useState('北京');
   const [selectedType, setSelectedType] = useState('物理组');
@@ -112,8 +160,6 @@ export const UniversityDetail: React.FC = () => {
     score: 0,
     rank: 0
   });
-
-  const uni = { ...MOCK_UNI_DETAIL, admissionRecords: records };
 
   // --- LOGIC: DATA FILTERING ---
   

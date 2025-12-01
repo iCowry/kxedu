@@ -84,6 +84,8 @@ export interface Announcement {
   title: string;
   content: string;
   targetGroup: 'All' | 'Teachers' | 'Students' | 'Parents';
+  targetDetail?: string;
+  priority: 'Normal' | 'High';
   sender: string;
   publishDate: string;
   readCount: number;

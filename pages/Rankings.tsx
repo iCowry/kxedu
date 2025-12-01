@@ -93,48 +93,85 @@ const generateUniversities = (): University[] => {
   return list;
 };
 
-// 2. High Schools: Real data for Top 5-8 of each city, filled to Top 20
+// 2. High Schools: REAL DATA ONLY
 const HS_DATA_SOURCE: Record<string, string[]> = {
-  '北京': ['人大附中', '北京四中', '清华附中', '北师大实验', '北京一零一中', '十一学校', '北大附中', '首师大附中', '北京八中', '北京二中'],
-  '上海': ['上海中学', '华师大二附中', '复旦附中', '交大附中', '七宝中学', '建平中学', '南洋模范', '延安中学', '格致中学', '曹杨二中'],
-  '广州': ['华南师大附中', '广东实验中学', '广雅中学', '执信中学', '广州二中', '广州六中', '广大附中', '铁一中学'],
-  '深圳': ['深圳中学', '深圳实验学校', '深圳外国语', '深圳高级中学', '红岭中学', '宝安中学', '育才中学', '翠园中学', '深大附中'],
-  '杭州': ['杭州二中', '学军中学', '杭州高级中学', '杭州十四中', '杭州四中', '浙大附中', '杭师大附中', '长河高级中学'],
-  '南京': ['南京外国语', '南师附中', '金陵中学', '南京一中', '中华中学', '南京二十九中', '南京十三中', '南京九中'],
-  '成都': ['成都七中', '树德中学', '石室中学', '师大附中', '成外', '实外', '七中万达', '石室天府'],
-  '武汉': ['华师一附中', '武汉二中', '武汉外校', '武钢三中', '省实验中学', '武汉一中', '武汉三中', '武汉六中'],
-  '西安': ['西工大附中', '高新一中', '铁一中', '交大附中', '师大附中', '西安中学', '西安一中', '长安一中'],
+  '北京': [
+    '人大附中', '北京四中', '清华附中', '北师大实验中学', '北京一零一中', '十一学校', 
+    '北大附中', '首师大附中', '北京八中', '北京二中', '北京一七一中学', '北京八十中学', 
+    '汇文中学', '陈经纶中学', '人大附中朝阳学校', '清华附中朝阳学校'
+  ],
+  '上海': [
+    '上海中学', '华师大二附中', '复旦附中', '交大附中', '七宝中学', '建平中学', 
+    '南洋模范', '延安中学', '格致中学', '曹杨二中', '控江中学', '大同中学', '松江二中'
+  ],
+  '广州': [
+    '华南师大附中', '广东实验中学', '广雅中学', '执信中学', '广州二中', '广州六中', 
+    '广大附中', '铁一中学', '真光中学', '广州外国语学校'
+  ],
+  '深圳': [
+    '深圳中学', '深圳实验学校(高中部)', '深圳外国语学校', '深圳高级中学(中心校区)', 
+    '红岭中学', '宝安中学', '育才中学', '翠园中学', '深大附中', '深圳科学高中'
+  ],
+  '杭州': [
+    '杭州二中(滨江校区)', 
+    '学军中学(西溪校区)', 
+    '杭州高级中学(贡院校区)', 
+    '杭州十四中(凤起校区)', 
+    '杭州四中(下沙校区)', 
+    '浙大附中(玉泉校区)', 
+    '萧山中学', 
+    '余杭高级中学', 
+    '学军中学(紫金港校区)', 
+    '富阳中学', 
+    '杭州师范大学附属中学', 
+    '长河高级中学', 
+    '杭州高级中学(钱江校区)', 
+    '杭州二中(东河校区)', 
+    '杭州十四中(康桥校区)', 
+    '浙大附中(丁兰校区)', 
+    '学军中学海创园学校', 
+    '杭二中钱江学校', 
+    '源清中学'
+  ],
+  '南京': [
+    '南京外国语学校', '南师附中', '金陵中学', '南京一中', '中华中学', '南京二十九中', 
+    '南京十三中', '南京九中', '南京师范大学附属中学江宁分校'
+  ],
+  '成都': [
+    '成都七中(林荫校区)', '成都七中(高新校区)', '树德中学(宁夏街校区)', '树德中学(光华校区)', 
+    '石室中学(文庙校区)', '石室中学(北湖校区)', '师大附中', '成都外国语学校', '成都实验外国语学校'
+  ],
+  '武汉': [
+    '华师一附中', '武汉二中', '武汉外国语学校', '武钢三中', '湖北省实验中学', '武汉一中', 
+    '武汉三中', '武汉六中', '武汉十一中', '洪山高中'
+  ],
+  '西安': [
+    '西工大附中', '高新一中', '铁一中', '交大附中', '师大附中', '西安中学', 
+    '西安一中', '长安一中', '西安高级中学'
+  ],
 };
 
 const generateHighSchools = (city: string): HighSchool[] => {
   const realNames = HS_DATA_SOURCE[city] || [];
   const list: HighSchool[] = [];
 
-  // Add Real Schools
+  // Add Real Schools Only
   realNames.forEach((name, index) => {
+    let tags = ['省一级重点'];
+    if (index < 3) tags = ['省重点', '超级中学', '重本率95%+'];
+    else if (index < 8) tags = ['省重点', '示范高中'];
+
     list.push({
       rank: index + 1,
       name: name,
       city: city,
-      district: '市直属/重点区', // Simplified
-      tags: index < 3 ? ['省重点', '超级中学'] : ['省重点', '示范高中'],
-      enrollmentRate: +(98 - index * 1.5).toFixed(1), // Mock 985/211 admission rate
-      topScore: 720 - index * 5 // Mock Score
+      district: '市区/重点片区',
+      tags: tags,
+      enrollmentRate: +(98 - index * 1.2).toFixed(1), // Mock data logic
+      topScore: 715 - index * 2
     });
   });
 
-  // Fill up to 20
-  for (let i = realNames.length; i < 20; i++) {
-    list.push({
-      rank: i + 1,
-      name: `${city}第${i + 1}中学`,
-      city: city,
-      district: '市区',
-      tags: ['市重点'],
-      enrollmentRate: +(80 - (i - 10) * 2).toFixed(1),
-      topScore: 650 - (i * 5)
-    });
-  }
   return list;
 };
 
@@ -143,7 +180,7 @@ const AVAILABLE_CITIES = Object.keys(HS_DATA_SOURCE);
 export const Rankings: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'universities' | 'highschools'>('universities');
-  const [selectedCity, setSelectedCity] = useState<string>('北京');
+  const [selectedCity, setSelectedCity] = useState<string>('杭州');
   const [searchTerm, setSearchTerm] = useState('');
 
   // Memoize data generation so it doesn't run on every render
@@ -155,7 +192,7 @@ export const Rankings: React.FC = () => {
     uni.name.includes(searchTerm) || uni.englishName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Filter High Schools (Client side search on the current 20)
+  // Filter High Schools (Client side search on the current list)
   const filteredHighSchools = currentHighSchools.filter(hs => 
     hs.name.includes(searchTerm)
   );
@@ -187,7 +224,7 @@ export const Rankings: React.FC = () => {
              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'highschools' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
            >
              <div className="flex items-center gap-2">
-               <BookOpen size={16}/> 重点高中 Top 20
+               <BookOpen size={16}/> 重点高中榜单
              </div>
            </button>
         </div>
@@ -377,7 +414,7 @@ export const Rankings: React.FC = () => {
                     <td colSpan={6} className="py-12 text-center text-slate-400">
                       <div className="flex flex-col items-center gap-2">
                         <MapPin size={32} className="opacity-50"/>
-                        <p>未找到匹配的高中数据</p>
+                        <p>未找到该城市的匹配高中数据</p>
                       </div>
                     </td>
                  </tr>

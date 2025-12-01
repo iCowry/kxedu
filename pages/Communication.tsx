@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { MessageCircle, Bell, Users, Eye, Send, FileText, CheckCircle2, X, Plus } from 'lucide-react';
+import { MessageCircle, Bell, Users, Eye, Send, FileText, CheckCircle2, X, Plus, AlertTriangle, Paperclip, Layout } from 'lucide-react';
 import { Announcement } from '../types';
 
 const INITIAL_ANNOUNCEMENTS: Announcement[] = [
-  { id: 'ANN-001', title: '关于2025年寒假放假安排的通知', content: '各位师生、家长：\n根据教育局规定，我校2025年寒假放假时间定于...', targetGroup: 'All', sender: '教务处', publishDate: '2025-01-10', readCount: 2150, totalCount: 2400 },
-  { id: 'ANN-002', title: '春季运动会报名开启', content: '请各班体育委员统计参赛名单...', targetGroup: 'Students', sender: '体育组', publishDate: '2025-03-01', readCount: 890, totalCount: 1200 },
-  { id: 'ANN-003', title: '致家长的一封信：关于预防流感', content: '近期流感高发，请家长注意...', targetGroup: 'Parents', sender: '校医务室', publishDate: '2024-11-20', readCount: 1800, totalCount: 2400 },
+  { id: 'ANN-001', title: '关于2025年寒假放假安排的通知', content: '各位师生、家长：\n根据教育局规定，我校2025年寒假放假时间定于...', targetGroup: 'All', priority: 'High', sender: '教务处', publishDate: '2025-01-10', readCount: 2150, totalCount: 2400 },
+  { id: 'ANN-002', title: '春季运动会报名开启', content: '请各班体育委员统计参赛名单...', targetGroup: 'Students', targetDetail: 'All Grades', priority: 'Normal', sender: '体育组', publishDate: '2025-03-01', readCount: 890, totalCount: 1200 },
+  { id: 'ANN-003', title: '致家长的一封信：关于预防流感', content: '近期流感高发，请家长注意...', targetGroup: 'Parents', targetDetail: 'Primary Section', priority: 'High', sender: '校医务室', publishDate: '2024-11-20', readCount: 1800, totalCount: 2400 },
 ];
 
 export const Communication: React.FC = () => {
@@ -16,6 +16,8 @@ export const Communication: React.FC = () => {
   const [newAnnounce, setNewAnnounce] = useState<Partial<Announcement>>({
     title: '',
     targetGroup: 'All',
+    targetDetail: '',
+    priority: 'Normal',
     sender: '教务处',
     content: ''
   });
@@ -34,6 +36,8 @@ export const Communication: React.FC = () => {
       title: newAnnounce.title || '无标题通知',
       content: newAnnounce.content || '',
       targetGroup: newAnnounce.targetGroup as any,
+      targetDetail: newAnnounce.targetDetail || 'General',
+      priority: newAnnounce.priority as any || 'Normal',
       sender: newAnnounce.sender || '行政处',
       publishDate: new Date().toISOString().split('T')[0],
       readCount: 0,
@@ -47,6 +51,8 @@ export const Communication: React.FC = () => {
     setNewAnnounce({
       title: '',
       targetGroup: 'All',
+      targetDetail: '',
+      priority: 'Normal',
       sender: '教务处',
       content: ''
     });
@@ -81,19 +87,30 @@ export const Communication: React.FC = () => {
                 </div>
                 <div className="divide-y divide-slate-100 overflow-y-auto flex-1">
                     {announcements.map(ann => (
-                        <div key={ann.id} className="p-6 hover:bg-slate-50 transition-colors group cursor-pointer">
-                            <div className="flex justify-between items-start mb-2">
+                        <div key={ann.id} className="p-6 hover:bg-slate-50 transition-colors group cursor-pointer relative">
+                            {/* Priority Indicator */}
+                            {ann.priority === 'High' && (
+                                <div className="absolute top-0 right-0 p-2">
+                                    <span className="flex items-center gap-1 text-xs font-bold text-red-600 bg-red-50 border border-red-100 px-2 py-0.5 rounded-bl-lg rounded-tr-lg">
+                                        <AlertTriangle size={10}/> 紧急
+                                    </span>
+                                </div>
+                            )}
+
+                            <div className="flex justify-between items-start mb-2 pr-12">
                                 <h4 className="text-lg font-semibold text-slate-900 group-hover:text-brand-600 transition-colors line-clamp-1">{ann.title}</h4>
                                 <span className="text-xs text-slate-400 whitespace-nowrap ml-4">{ann.publishDate}</span>
                             </div>
                             <p className="text-sm text-slate-600 mb-3 line-clamp-2">{ann.content}</p>
-                            <div className="flex items-center gap-4 text-xs text-slate-500">
-                                <span className={`flex items-center gap-1 px-2 py-0.5 rounded ${
-                                    ann.targetGroup === 'All' ? 'bg-blue-50 text-blue-700' :
-                                    ann.targetGroup === 'Parents' ? 'bg-purple-50 text-purple-700' :
-                                    'bg-slate-100 text-slate-700'
+                            <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500">
+                                <span className={`flex items-center gap-1 px-2 py-0.5 rounded border ${
+                                    ann.targetGroup === 'All' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                                    ann.targetGroup === 'Parents' ? 'bg-purple-50 text-purple-700 border-purple-100' :
+                                    ann.targetGroup === 'Teachers' ? 'bg-amber-50 text-amber-700 border-amber-100' :
+                                    'bg-slate-100 text-slate-700 border-slate-200'
                                 }`}>
                                     <Users size={12}/> 对象: {ann.targetGroup === 'All' ? '全校师生' : ann.targetGroup}
+                                    {ann.targetDetail && ann.targetDetail !== 'General' && <span className="ml-1 opacity-75">({ann.targetDetail})</span>}
                                 </span>
                                 <span className="flex items-center gap-1">
                                     <CheckCircle2 size={12} className="text-emerald-500"/> {ann.sender}
@@ -212,19 +229,6 @@ export const Communication: React.FC = () => {
 
                <div className="grid grid-cols-2 gap-4">
                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">接收对象</label>
-                    <select 
-                        className="w-full px-4 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
-                        value={newAnnounce.targetGroup}
-                        onChange={e => setNewAnnounce({...newAnnounce, targetGroup: e.target.value as any})}
-                    >
-                        <option value="All">全校师生 (All)</option>
-                        <option value="Students">仅学生 (Students)</option>
-                        <option value="Parents">仅家长 (Parents)</option>
-                        <option value="Teachers">仅教师 (Teachers)</option>
-                    </select>
-                 </div>
-                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">发布部门/人</label>
                     <input 
                         type="text" required placeholder="例如：教务处"
@@ -233,6 +237,44 @@ export const Communication: React.FC = () => {
                         onChange={e => setNewAnnounce({...newAnnounce, sender: e.target.value})}
                     />
                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">优先级</label>
+                    <div className="flex gap-2">
+                        <label className={`flex-1 flex items-center justify-center gap-1 py-2 border rounded-lg cursor-pointer transition-all ${newAnnounce.priority === 'Normal' ? 'bg-blue-50 border-blue-200 text-blue-700 font-medium' : 'border-slate-200 hover:bg-slate-50'}`}>
+                            <span className="w-2 h-2 rounded-full bg-blue-500"></span> 普通
+                            <input type="radio" name="priority" value="Normal" className="hidden" checked={newAnnounce.priority === 'Normal'} onChange={() => setNewAnnounce({...newAnnounce, priority: 'Normal'})} />
+                        </label>
+                        <label className={`flex-1 flex items-center justify-center gap-1 py-2 border rounded-lg cursor-pointer transition-all ${newAnnounce.priority === 'High' ? 'bg-red-50 border-red-200 text-red-700 font-medium' : 'border-slate-200 hover:bg-slate-50'}`}>
+                            <AlertTriangle size={14}/> 紧急
+                            <input type="radio" name="priority" value="High" className="hidden" checked={newAnnounce.priority === 'High'} onChange={() => setNewAnnounce({...newAnnounce, priority: 'High'})} />
+                        </label>
+                    </div>
+                 </div>
+               </div>
+
+               <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">接收对象</label>
+                    <div className="flex gap-3">
+                        <select 
+                            className="flex-1 px-4 py-2 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+                            value={newAnnounce.targetGroup}
+                            onChange={e => setNewAnnounce({...newAnnounce, targetGroup: e.target.value as any})}
+                        >
+                            <option value="All">全校师生 (All)</option>
+                            <option value="Students">仅学生 (Students)</option>
+                            <option value="Parents">仅家长 (Parents)</option>
+                            <option value="Teachers">仅教师 (Teachers)</option>
+                        </select>
+                        {newAnnounce.targetGroup !== 'All' && (
+                             <input 
+                                type="text" 
+                                placeholder={newAnnounce.targetGroup === 'Teachers' ? "如：数学组" : "如：Grade 10"}
+                                className="flex-1 px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                                value={newAnnounce.targetDetail}
+                                onChange={e => setNewAnnounce({...newAnnounce, targetDetail: e.target.value})}
+                             />
+                        )}
+                    </div>
                </div>
 
                <div>
@@ -244,6 +286,15 @@ export const Communication: React.FC = () => {
                     value={newAnnounce.content}
                     onChange={e => setNewAnnounce({...newAnnounce, content: e.target.value})}
                   />
+               </div>
+
+               <div className="flex items-center justify-between p-3 border border-dashed border-slate-300 rounded-lg bg-slate-50/50">
+                    <span className="text-sm text-slate-500 flex items-center gap-2">
+                        <Paperclip size={16}/> 添加附件 (可选)
+                    </span>
+                    <button type="button" className="text-xs text-brand-600 hover:text-brand-700 font-medium border border-brand-200 px-3 py-1 rounded bg-white">
+                        选择文件
+                    </button>
                </div>
 
                <div className="flex items-center gap-2 p-3 bg-blue-50 text-blue-800 rounded-lg text-sm">
