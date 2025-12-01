@@ -14,7 +14,11 @@ import {
   Trophy,
   Layers,
   ListOrdered,
-  BookCheck
+  BookCheck,
+  Target,
+  GitBranch,
+  Database,
+  Coffee
 } from 'lucide-react';
 import { NavItem } from '../types';
 
@@ -23,9 +27,13 @@ const navItems: NavItem[] = [
   { label: '租户管理 Tenants', path: '/tenants', icon: Building2 },
   { label: '组织架构 Org', path: '/organization', icon: Layers }, 
   { label: '院校排行 Rankings', path: '/rankings', icon: ListOrdered }, 
+  { label: '竞赛规划 Competitions', path: '/competitions', icon: Target },
   { label: '教职工管理 HR', path: '/staff', icon: Users },
   { label: '学生管理 Student', path: '/students', icon: GraduationCap },
-  { label: '学情管理 Learning', path: '/learning', icon: BookCheck }, // New Module
+  { label: '学情管理 Learning', path: '/learning', icon: BookCheck },
+  { label: '教研中心 Research', path: '/research', icon: GitBranch },
+  { label: '题库管理 Question Bank', path: '/questions', icon: Database },
+  { label: '教学辅导 Tutoring', path: '/tutoring', icon: Coffee },
   { label: '教学教务 Academic', path: '/academic', icon: BookOpen },
   { label: '财务管理 Finance', path: '/finance', icon: CreditCard },
   { label: '校园行政 Campus', path: '/campus', icon: Building },

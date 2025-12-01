@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, MapPin, BookOpen, TrendingUp, GraduationCap, Filter, FlaskConical, Star } from 'lucide-react';
+import { Search, MapPin, BookOpen, TrendingUp, GraduationCap, Filter, FlaskConical, Star, Book, Microscope } from 'lucide-react';
 import { University, HighSchool } from '../types';
 import { useNavigate } from 'react-router-dom';
 
@@ -175,27 +175,102 @@ const generateHighSchools = (city: string): HighSchool[] => {
   return list;
 };
 
+// 3. Subject Rankings Data
+const SUBJECT_CATEGORIES: Record<string, string[]> = {
+  '工学': ['计算机科学与技术', '软件工程', '电子科学与技术', '信息与通信工程', '机械工程', '土木工程', '材料科学与工程'],
+  '理学': ['数学', '物理学', '化学', '生物学', '统计学'],
+  '医学': ['临床医学', '口腔医学', '基础医学', '公共卫生与预防医学'],
+  '人文社科': ['法学', '应用经济学', '工商管理', '中国语言文学', '外国语言文学'],
+  '农学': ['作物学', '农业资源与环境']
+};
+
+interface SubjectRankingItem {
+  rank: number;
+  uniName: string;
+  grade: 'A+' | 'A' | 'A-' | 'B+' | 'B';
+  location: string;
+  tags: string[];
+}
+
+const generateSubjectRankings = (subject: string): SubjectRankingItem[] => {
+  // Use a pool of real universities to create mock rankings for the specific subject
+  // We pseudo-randomize based on subject name length to get deterministic but varied results per subject
+  const pool = [...REAL_TOP_UNIVERSITIES];
+  
+  // Custom sort to simulate subject strength variance
+  pool.sort((a, b) => {
+      const scoreA = (a.name!.length * 7 + subject.length * 3) % 100;
+      const scoreB = (b.name!.length * 7 + subject.length * 3) % 100;
+      // Also bias towards famous engineering schools for engineering subjects
+      const isEng = SUBJECT_CATEGORIES['工学'].includes(subject);
+      const isEngSchoolA = a.tags!.includes('985') && (a.name!.includes('理工') || a.name!.includes('科技') || a.name!.includes('交通'));
+      const isEngSchoolB = b.tags!.includes('985') && (b.name!.includes('理工') || b.name!.includes('科技') || b.name!.includes('交通'));
+      
+      let valA = scoreA + (isEng && isEngSchoolA ? 50 : 0);
+      let valB = scoreB + (isEng && isEngSchoolB ? 50 : 0);
+
+      // Force Tsinghua/Peking/ZJU to be near top generally
+      if (['清华大学','北京大学','浙江大学'].includes(a.name!)) valA += 80;
+      if (['清华大学','北京大学','浙江大学'].includes(b.name!)) valB += 80;
+
+      return valB - valA;
+  });
+
+  const list: SubjectRankingItem[] = [];
+  pool.slice(0, 30).forEach((uni, index) => {
+      let grade: 'A+' | 'A' | 'A-' | 'B+' = 'B+';
+      // Mock grade distribution
+      if (index < 4) grade = 'A+'; // Top 2% (approx)
+      else if (index < 12) grade = 'A'; // Top 2-5%
+      else if (index < 25) grade = 'A-'; // Top 5-10%
+      
+      list.push({
+          rank: index + 1,
+          uniName: uni.name!,
+          location: uni.location!,
+          tags: uni.tags!,
+          grade: grade
+      });
+  });
+  
+  return list;
+};
+
 const AVAILABLE_CITIES = Object.keys(HS_DATA_SOURCE);
 
 export const Rankings: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'universities' | 'highschools'>('universities');
+  const [activeTab, setActiveTab] = useState<'universities' | 'subjects' | 'highschools'>('universities');
   const [selectedCity, setSelectedCity] = useState<string>('杭州');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Memoize data generation so it doesn't run on every render
+  // Subject Filter States
+  const [selectedSubjectCategory, setSelectedSubjectCategory] = useState('工学');
+  const [selectedSubject, setSelectedSubject] = useState(SUBJECT_CATEGORIES['工学'][0]);
+
+  // Memoize data generation
   const allUniversities = useMemo(() => generateUniversities(), []);
   const currentHighSchools = useMemo(() => generateHighSchools(selectedCity), [selectedCity]);
+  const currentSubjectRankings = useMemo(() => generateSubjectRankings(selectedSubject), [selectedSubject]);
 
-  // Filter Universities
+  // Filters
   const filteredUniversities = allUniversities.filter(uni => 
     uni.name.includes(searchTerm) || uni.englishName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Filter High Schools (Client side search on the current list)
   const filteredHighSchools = currentHighSchools.filter(hs => 
     hs.name.includes(searchTerm)
   );
+
+  const filteredSubjectRankings = currentSubjectRankings.filter(item => 
+    item.uniName.includes(searchTerm)
+  );
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const cat = e.target.value;
+      setSelectedSubjectCategory(cat);
+      setSelectedSubject(SUBJECT_CATEGORIES[cat][0]);
+  };
 
   return (
     <div className="p-8 space-y-6 flex flex-col h-[calc(100vh-64px)]">
@@ -208,20 +283,28 @@ export const Rankings: React.FC = () => {
       </div>
 
       {/* Tabs & Controls */}
-      <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+      <div className="flex flex-col xl:flex-row gap-4 justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         {/* Tab Switcher */}
-        <div className="flex p-1 bg-slate-100 rounded-lg">
+        <div className="flex p-1 bg-slate-100 rounded-lg overflow-x-auto max-w-full">
            <button 
              onClick={() => setActiveTab('universities')}
-             className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'universities' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+             className={`px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'universities' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
            >
              <div className="flex items-center gap-2">
                <GraduationCap size={16}/> 全国高校 Top 100
              </div>
            </button>
            <button 
+             onClick={() => setActiveTab('subjects')}
+             className={`px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'subjects' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+           >
+             <div className="flex items-center gap-2">
+               <Microscope size={16}/> 学科评估排名
+             </div>
+           </button>
+           <button 
              onClick={() => setActiveTab('highschools')}
-             className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'highschools' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+             className={`px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'highschools' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
            >
              <div className="flex items-center gap-2">
                <BookOpen size={16}/> 重点高中榜单
@@ -230,14 +313,14 @@ export const Rankings: React.FC = () => {
         </div>
 
         {/* Filters */}
-        <div className="flex gap-4 w-full md:w-auto">
+        <div className="flex gap-3 w-full xl:w-auto overflow-x-auto pb-2 xl:pb-0">
           {activeTab === 'highschools' && (
-            <div className="relative">
+            <div className="relative min-w-[120px]">
               <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <select 
                 value={selectedCity}
                 onChange={(e) => setSelectedCity(e.target.value)}
-                className="pl-9 pr-8 py-2 border border-slate-200 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-medium text-slate-700 appearance-none cursor-pointer hover:bg-slate-100 transition-colors"
+                className="w-full pl-9 pr-8 py-2 border border-slate-200 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-medium text-slate-700 appearance-none cursor-pointer hover:bg-slate-100 transition-colors"
               >
                 {AVAILABLE_CITIES.map(city => (
                    <option key={city} value={city}>{city}</option>
@@ -245,12 +328,37 @@ export const Rankings: React.FC = () => {
               </select>
             </div>
           )}
+
+          {activeTab === 'subjects' && (
+            <>
+               <div className="relative min-w-[120px]">
+                 <Filter size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                 <select 
+                   value={selectedSubjectCategory}
+                   onChange={handleCategoryChange}
+                   className="w-full pl-9 pr-8 py-2 border border-slate-200 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-medium text-slate-700 appearance-none cursor-pointer hover:bg-slate-100 transition-colors"
+                 >
+                   {Object.keys(SUBJECT_CATEGORIES).map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                 </select>
+               </div>
+               <div className="relative min-w-[180px]">
+                 <Book size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                 <select 
+                   value={selectedSubject}
+                   onChange={(e) => setSelectedSubject(e.target.value)}
+                   className="w-full pl-9 pr-8 py-2 border border-slate-200 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-medium text-slate-700 appearance-none cursor-pointer hover:bg-slate-100 transition-colors"
+                 >
+                   {SUBJECT_CATEGORIES[selectedSubjectCategory].map(sub => <option key={sub} value={sub}>{sub}</option>)}
+                 </select>
+               </div>
+            </>
+          )}
           
-          <div className="relative flex-1 md:w-64">
+          <div className="relative flex-1 xl:w-64 min-w-[200px]">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input 
               type="text" 
-              placeholder={activeTab === 'universities' ? "搜索大学名称..." : "搜索高中名称..."}
+              placeholder="搜索学校名称..."
               className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -350,6 +458,66 @@ export const Rankings: React.FC = () => {
               )}
             </tbody>
           </table>
+        )}
+        
+        {/* Subject Rankings List */}
+        {activeTab === 'subjects' && (
+          <div>
+            <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+               <div className="flex items-center gap-2 text-slate-700 font-bold">
+                  <Microscope size={18} className="text-brand-600"/>
+                  {selectedSubject} <span className="text-slate-400 font-normal mx-1">/</span> <span className="text-sm font-medium text-slate-500">{selectedSubjectCategory}</span>
+               </div>
+               <span className="text-xs text-slate-500">基于第四轮学科评估结果模拟</span>
+            </div>
+            <table className="w-full text-left">
+              <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-semibold sticky top-0 z-10 shadow-sm">
+                <tr>
+                  <th className="px-6 py-4 w-20 text-center">排名</th>
+                  <th className="px-6 py-4">学校名称</th>
+                  <th className="px-6 py-4 text-center">评估等级</th>
+                  <th className="px-6 py-4">学校标签</th>
+                  <th className="px-6 py-4 text-right">所在地</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredSubjectRankings.length > 0 ? filteredSubjectRankings.map((item) => (
+                  <tr key={item.rank} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4 text-center">
+                       <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${
+                        item.rank <= 3 ? 'bg-amber-100 text-amber-600' : 
+                        item.rank <= 10 ? 'bg-slate-100 text-slate-700' : 'text-slate-400'
+                      }`}>
+                        {item.rank}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 font-bold text-slate-900">{item.uniName}</td>
+                    <td className="px-6 py-4 text-center">
+                      <span className={`inline-block px-3 py-1 rounded font-bold text-sm ${
+                        item.grade === 'A+' ? 'bg-red-50 text-red-600 border border-red-100' :
+                        item.grade === 'A' ? 'bg-brand-50 text-brand-600 border border-brand-100' :
+                        'bg-slate-100 text-slate-600'
+                      }`}>
+                        {item.grade}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                       <div className="flex gap-2">
+                        {item.tags.slice(0, 2).map(tag => (
+                           <span key={tag} className="text-xs px-2 py-0.5 bg-slate-100 text-slate-500 rounded border border-slate-200">{tag}</span>
+                        ))}
+                       </div>
+                    </td>
+                    <td className="px-6 py-4 text-right text-sm text-slate-500">{item.location}</td>
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan={5} className="py-12 text-center text-slate-400">未找到该学科的排名数据</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {/* High School List */}

@@ -281,3 +281,84 @@ export interface ExamResult {
   rank: number;
   change: number; // Rank change
 }
+
+// --- COMPETITION MODULE TYPES ---
+export interface Competition {
+  id: string;
+  name: string;
+  subject: 'Math' | 'Physics' | 'Chemistry' | 'Informatics';
+  level: 'Provincial' | 'National' | 'International';
+  date: string;
+  location?: string;
+  status: 'Upcoming' | 'Ongoing' | 'Completed';
+  organizer?: string;
+}
+
+export interface TrainingPlan {
+  id: string;
+  subject: 'Math' | 'Physics' | 'Chemistry' | 'Informatics';
+  phase: 'Basic' | 'Advanced' | 'Sprint';
+  title: string;
+  startDate: string;
+  endDate: string;
+  description: string;
+  coach: string;
+}
+
+// --- KNOWLEDGE BASE TYPES ---
+export interface KnowledgeNode {
+  id: string;
+  title: string;
+  type: 'Chapter' | 'Section' | 'Point';
+  stage: 'Primary' | 'Middle' | 'High';
+  subject: string; // e.g. 'Math', 'Physics'
+  difficulty?: 1 | 2 | 3 | 4 | 5; // 1: Easy, 5: Hard
+  importance?: 'Core' | 'Optional' | 'Expanded'; // 核心/选修/拓展
+  parentId?: string;
+  description?: string;
+  children?: KnowledgeNode[]; // Helper for recursive rendering
+}
+
+// --- QUESTION BANK TYPES ---
+export interface Question {
+  id: string;
+  type: 'SingleChoice' | 'MultipleChoice' | 'TrueFalse' | 'FillBlank' | 'Essay';
+  content: string;
+  options?: string[]; // For choices
+  answer: string;
+  difficulty: 1 | 2 | 3 | 4 | 5;
+  subject: string;
+  grade: string; // e.g. "High School" or "Grade 10"
+  knowledgePoint?: string; // Linked knowledge point title
+  tags?: string[];
+  createdAt: string;
+  author: string;
+  analysis?: string; // Detailed solution/analysis
+  source?: string; // e.g. "2024 Beijing Final"
+}
+
+// --- TEACHING & TUTORING TYPES ---
+export interface TutoringSession {
+  id: string;
+  studentName: string;
+  teacherName: string;
+  subject: string;
+  date: string;
+  startTime: string;
+  duration: number; // minutes
+  status: 'Scheduled' | 'Completed' | 'Cancelled';
+  notes?: string;
+  location?: string; // e.g. "Room 303" or "Online"
+}
+
+export interface LearningResource {
+  id: string;
+  title: string;
+  type: 'PDF' | 'Video' | 'PPT' | 'Link';
+  subject: string;
+  url: string; // Mock url
+  size?: string;
+  uploadDate: string;
+  author: string;
+  downloads: number;
+}

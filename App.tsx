@@ -21,6 +21,10 @@ import { HighSchoolDetail } from './pages/HighSchoolDetail';
 import { Learning } from './pages/Learning'; 
 import { HomeworkDetail } from './pages/HomeworkDetail';
 import { ExamDetail } from './pages/ExamDetail';
+import { CompetitionPlanning } from './pages/CompetitionPlanning';
+import { KnowledgeBase } from './pages/KnowledgeBase';
+import { QuestionBank } from './pages/QuestionBank';
+import { TeachingSupport } from './pages/TeachingSupport';
 import { AIChatBot } from './components/AIChatBot';
 
 const App: React.FC = () => {
@@ -41,6 +45,8 @@ const App: React.FC = () => {
             <Route path="/rankings/university/:id" element={<UniversityDetail />} />
             <Route path="/rankings/highschool/:id" element={<HighSchoolDetail />} />
 
+            <Route path="/competitions" element={<CompetitionPlanning />} />
+
             <Route path="/students" element={<StudentList />} />
             <Route path="/students/:id" element={<StudentDetail />} /> 
             
@@ -48,6 +54,10 @@ const App: React.FC = () => {
             <Route path="/learning/homework/:id" element={<HomeworkDetail />} />
             <Route path="/learning/exam/:id" element={<ExamDetail />} />
             
+            <Route path="/research" element={<KnowledgeBase />} />
+            <Route path="/questions" element={<QuestionBank />} />
+            <Route path="/tutoring" element={<TeachingSupport />} />
+
             <Route path="/staff" element={<StaffList />} />
             <Route path="/academic" element={<Academic />} />
             <Route path="/finance" element={<Finance />} />
