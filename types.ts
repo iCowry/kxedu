@@ -469,6 +469,24 @@ export interface SportTeam {
   rank?: number;
 }
 
+export interface MatchEvent {
+  id: string;
+  time: string; // e.g. "12'" or "Q2 04:30"
+  type: 'Goal' | 'Point' | 'Foul' | 'Card' | 'Sub' | 'Timeout';
+  description: string;
+  team: 'Home' | 'Away';
+  player?: string;
+}
+
+export interface PlayerGameStats {
+  id: string;
+  name: string;
+  number: number;
+  team: 'Home' | 'Away';
+  // Generic stats map (e.g. { Pts: 20, Reb: 5 } or { Goals: 1, Asst: 0 })
+  stats: Record<string, string | number>; 
+}
+
 export interface SportMatch {
   id: string;
   leagueId: string;

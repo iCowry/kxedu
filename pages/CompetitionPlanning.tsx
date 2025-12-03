@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Target, Calendar, MapPin, Flag, ChevronRight, Users, Plus, Award, Zap, Code, FlaskConical, Book, List, GraduationCap, ArrowRight } from 'lucide-react';
 import { Competition, TrainingPlan, Student } from '../types';
@@ -277,10 +278,10 @@ export const CompetitionPlanning: React.FC = () => {
 
   // Subject Configuration
   const SUBJECT_CONFIG = {
-      'Math': { icon: Target, color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', label: '数学竞赛 (Math)' },
-      'Physics': { icon: Zap, color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-200', label: '物理竞赛 (Physics)' },
-      'Chemistry': { icon: FlaskConical, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200', label: '化学竞赛 (Chemistry)' },
-      'Informatics': { icon: Code, color: 'text-slate-700', bg: 'bg-slate-100', border: 'border-slate-300', label: '信息学 (Informatics)' }
+      'Math': { icon: Target, color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', label: '数学竞赛' },
+      'Physics': { icon: Zap, color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-200', label: '物理竞赛' },
+      'Chemistry': { icon: FlaskConical, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200', label: '化学竞赛' },
+      'Informatics': { icon: Code, color: 'text-slate-700', bg: 'bg-slate-100', border: 'border-slate-300', label: '信息学奥赛' }
   };
 
   const ActiveIcon = SUBJECT_CONFIG[activeSubject].icon;
@@ -309,7 +310,7 @@ export const CompetitionPlanning: React.FC = () => {
                     }`}
                 >
                     <Icon size={20} />
-                    {subject}
+                    {SUBJECT_CONFIG[subject].label}
                 </button>
               );
           })}
@@ -362,7 +363,7 @@ export const CompetitionPlanning: React.FC = () => {
                                           <div className="md:w-1/3">
                                               <div className="flex items-center gap-2 mb-2">
                                                   <span className="px-2 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded uppercase tracking-wider">
-                                                      Phase {idx + 1}
+                                                      阶段 {idx + 1}
                                                   </span>
                                                   <h4 className="font-bold text-slate-900 text-lg">{phase.term}</h4>
                                               </div>
@@ -505,7 +506,7 @@ export const CompetitionPlanning: React.FC = () => {
               <div className="bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl p-6 text-white shadow-lg">
                   <div className="flex items-start justify-between">
                       <div>
-                          <p className="font-medium opacity-90 text-sm mb-1">上届 {activeSubject} 最佳成绩</p>
+                          <p className="font-medium opacity-90 text-sm mb-1">上届 {SUBJECT_CONFIG[activeSubject].label} 最佳成绩</p>
                           <h3 className="text-2xl font-bold">国家一等奖</h3>
                           <p className="text-sm mt-1 opacity-90">2 人入选省队，1 人保送清北</p>
                       </div>

@@ -1,65 +1,91 @@
-import React, { useState } from 'react';
-import { Activity, Trophy, Users, Calendar, MapPin, Clock, Plus, Filter, Target, Award, Search, MoreHorizontal, ChevronLeft, TrendingUp, User, Settings, ClipboardList, CheckCircle, XCircle, Edit2, Save, X } from 'lucide-react';
-import { SportLeague, SportTeam, SportMatch, LeagueRegistration } from '../types';
 
-// --- MOCK DATA ---
+import React, { useState } from 'react';
+import { Activity, Trophy, Users, Calendar, MapPin, Clock, Plus, Filter, Target, Award, Search, MoreHorizontal, ChevronLeft, TrendingUp, User, Settings, ClipboardList, CheckCircle, XCircle, Edit2, Save, X, FileText, Timer } from 'lucide-react';
+import { SportLeague, SportTeam, SportMatch, LeagueRegistration, MatchEvent, PlayerGameStats } from '../types';
+
+// --- MOCK DATA (Localized) ---
 const MOCK_LEAGUES: SportLeague[] = [
-  { id: 'L1', name: 'High School Basketball League (HBL)', sport: 'Basketball', season: '2024-2025', status: 'Ongoing', startDate: '2024-10-01', endDate: '2025-05-20' },
-  { id: 'L2', name: 'Campus Football Cup', sport: 'Football', season: '2024 Fall', status: 'Completed', startDate: '2024-09-15', endDate: '2024-11-30' },
-  { id: 'L3', name: 'City Swimming Championship', sport: 'Swimming', season: '2025', status: 'Upcoming', startDate: '2025-06-10', endDate: '2025-06-12' },
-  { id: 'L4', name: 'Inter-School Badminton Open', sport: 'Badminton', season: '2025 Spring', status: 'Upcoming', startDate: '2025-03-15', endDate: '2025-04-15' },
+  { id: 'L1', name: '高中篮球联赛 (HBL)', sport: 'Basketball', season: '2024-2025', status: 'Ongoing', startDate: '2024-10-01', endDate: '2025-05-20' },
+  { id: 'L2', name: '校园足球杯', sport: 'Football', season: '2024 秋季赛', status: 'Completed', startDate: '2024-09-15', endDate: '2024-11-30' },
+  { id: 'L3', name: '市级游泳锦标赛', sport: 'Swimming', season: '2025', status: 'Upcoming', startDate: '2025-06-10', endDate: '2025-06-12' },
+  { id: 'L4', name: '校际羽毛球公开赛', sport: 'Badminton', season: '2025 春季赛', status: 'Upcoming', startDate: '2025-03-15', endDate: '2025-04-15' },
 ];
 
 const MOCK_TEAMS: SportTeam[] = [
-  { id: 'T1', name: 'Varsity Lions (Men)', sport: 'Basketball', coach: 'Coach Carter', membersCount: 15, wins: 8, losses: 2, rank: 1 },
-  { id: 'T2', name: 'Varsity Lions (Women)', sport: 'Basketball', coach: 'Ms. Liu', membersCount: 12, wins: 5, losses: 4, rank: 3 },
-  { id: 'T3', name: 'Golden Eagles', sport: 'Football', coach: 'Mr. Zhang', membersCount: 22, wins: 10, losses: 1, draws: 1, rank: 1 },
-  { id: 'T4', name: 'Aqua Squad', sport: 'Swimming', coach: 'Coach Wang', membersCount: 18, wins: 0, losses: 0, rank: 0 },
+  { id: 'T1', name: '雄狮队 (男篮)', sport: 'Basketball', coach: '张教练', membersCount: 15, wins: 8, losses: 2, rank: 1 },
+  { id: 'T2', name: '雄狮队 (女篮)', sport: 'Basketball', coach: '刘老师', membersCount: 12, wins: 5, losses: 4, rank: 3 },
+  { id: 'T3', name: '金鹰足球队', sport: 'Football', coach: '王教练', membersCount: 22, wins: 10, losses: 1, draws: 1, rank: 1 },
+  { id: 'T4', name: '飞鱼游泳队', sport: 'Swimming', coach: '李教练', membersCount: 18, wins: 0, losses: 0, rank: 0 },
 ];
 
 const MOCK_REGISTRATIONS: LeagueRegistration[] = [
-    { id: 'R1', leagueId: 'L1', teamName: 'Rockets (Class 5)', coach: 'Mr. Wu', contact: '13800001234', status: 'Pending', submitDate: '2024-11-20' },
-    { id: 'R2', leagueId: 'L1', teamName: 'Thunders (Class 2)', coach: 'Ms. Zhao', contact: '13900005678', status: 'Approved', submitDate: '2024-11-18' },
-    { id: 'R3', leagueId: 'L1', teamName: 'Wildcats (Class 8)', coach: 'Mr. Liu', contact: '13700009876', status: 'Rejected', submitDate: '2024-11-15' },
+    { id: 'R1', leagueId: 'L1', teamName: '火箭队 (5班)', coach: '吴老师', contact: '13800001234', status: 'Pending', submitDate: '2024-11-20' },
+    { id: 'R2', leagueId: 'L1', teamName: '雷霆队 (2班)', coach: '赵老师', contact: '13900005678', status: 'Approved', submitDate: '2024-11-18' },
+    { id: 'R3', leagueId: 'L1', teamName: '野猫队 (8班)', coach: '刘老师', contact: '13700009876', status: 'Rejected', submitDate: '2024-11-15' },
 ];
 
 const MOCK_MATCHES: SportMatch[] = [
-  { id: 'M1', leagueId: 'L1', homeTeam: 'Varsity Lions', awayTeam: 'Red Tigers (No.4 High)', date: '2024-11-20', time: '16:00', location: 'Home Gym', scoreHome: 78, scoreAway: 72, status: 'Finished' },
-  { id: 'M2', leagueId: 'L1', homeTeam: 'Blue Sharks (Experimental)', awayTeam: 'Varsity Lions', date: '2024-11-27', time: '16:30', location: 'Away Gym', status: 'Scheduled' },
-  { id: 'M3', leagueId: 'L2', homeTeam: 'Golden Eagles', awayTeam: 'Iron Wolves', date: '2024-11-30', time: '14:00', location: 'Main Stadium', scoreHome: 3, scoreAway: 1, status: 'Finished' },
-  { id: 'M4', leagueId: 'L4', homeTeam: 'Kexin Badminton A', awayTeam: 'City High B', date: '2025-03-16', time: '09:00', location: 'Sports Center', status: 'Scheduled' },
+  { id: 'M1', leagueId: 'L1', homeTeam: '雄狮队', awayTeam: '猛虎队 (四中)', date: '2024-11-20', time: '16:00', location: '本校体育馆', scoreHome: 78, scoreAway: 72, status: 'Finished' },
+  { id: 'M2', leagueId: 'L1', homeTeam: '蓝鲨队 (实验中学)', awayTeam: '雄狮队', date: '2024-11-27', time: '16:30', location: '客场体育馆', status: 'Scheduled' },
+  { id: 'M3', leagueId: 'L2', homeTeam: '金鹰队', awayTeam: '铁狼队', date: '2024-11-30', time: '14:00', location: '中心体育场', scoreHome: 3, scoreAway: 1, status: 'Finished' },
+  { id: 'M4', leagueId: 'L4', homeTeam: '羽毛球A队', awayTeam: '市一中B队', date: '2025-03-16', time: '09:00', location: '奥体中心', status: 'Scheduled' },
+];
+
+// Mock Data for Match Detail
+const MOCK_MATCH_EVENTS: MatchEvent[] = [
+    { id: 'E1', time: 'Q1 08:20', type: 'Point', description: '中投得分 (2分)', team: 'Home', player: '张小明' },
+    { id: 'E2', time: 'Q1 05:45', type: 'Point', description: '三分命中', team: 'Away', player: 'Mike Johnson' },
+    { id: 'E3', time: 'Q2 02:10', type: 'Foul', description: '防守犯规', team: 'Home', player: '李伟' },
+    { id: 'E4', time: 'Q3 09:30', type: 'Point', description: '上篮得分 (2分)', team: 'Home', player: '张小明' },
+    { id: 'E5', time: 'Q4 01:05', type: 'Timeout', description: '战术暂停', team: 'Away' },
+];
+
+const MOCK_PLAYER_STATS: PlayerGameStats[] = [
+    { id: 'P1', name: '张小明', number: 23, team: 'Home', stats: { Pts: 28, Reb: 5, Ast: 7, Stl: 2 } },
+    { id: 'P2', name: '李伟', number: 11, team: 'Home', stats: { Pts: 15, Reb: 10, Ast: 2, Stl: 0 } },
+    { id: 'P3', name: '王强', number: 5, team: 'Home', stats: { Pts: 8, Reb: 3, Ast: 8, Stl: 3 } },
+    { id: 'P4', name: 'Mike Johnson', number: 1, team: 'Away', stats: { Pts: 32, Reb: 4, Ast: 5, Stl: 1 } },
+    { id: 'P5', name: '陈浩', number: 34, team: 'Away', stats: { Pts: 12, Reb: 12, Ast: 1, Stl: 0 } },
 ];
 
 // Mock Standings Data for Detail View
 const MOCK_STANDINGS = [
-    { rank: 1, team: 'Varsity Lions', played: 10, won: 8, drawn: 0, lost: 2, points: 16, form: ['W', 'W', 'L', 'W', 'W'] },
-    { rank: 2, team: 'Blue Sharks', played: 10, won: 7, drawn: 0, lost: 3, points: 14, form: ['W', 'L', 'W', 'W', 'L'] },
-    { rank: 3, team: 'Red Tigers', played: 10, won: 6, drawn: 0, lost: 4, points: 12, form: ['L', 'W', 'L', 'W', 'L'] },
-    { rank: 4, team: 'Iron Wolves', played: 10, won: 4, drawn: 0, lost: 6, points: 8, form: ['L', 'L', 'W', 'L', 'W'] },
+    { rank: 1, team: '雄狮队', played: 10, won: 8, drawn: 0, lost: 2, points: 16, form: ['W', 'W', 'L', 'W', 'W'] },
+    { rank: 2, team: '蓝鲨队', played: 10, won: 7, drawn: 0, lost: 3, points: 14, form: ['W', 'L', 'W', 'W', 'L'] },
+    { rank: 3, team: '猛虎队', played: 10, won: 6, drawn: 0, lost: 4, points: 12, form: ['L', 'W', 'L', 'W', 'L'] },
+    { rank: 4, team: '铁狼队', played: 10, won: 4, drawn: 0, lost: 6, points: 8, form: ['L', 'L', 'W', 'L', 'W'] },
 ];
 
 const MOCK_TOP_PLAYERS = [
-    { rank: 1, name: 'Zhang Xiaoming', team: 'Varsity Lions', metric: 'Points', value: 185 },
-    { rank: 2, name: 'Mike Johnson', team: 'Blue Sharks', metric: 'Points', value: 172 },
-    { rank: 3, name: 'Li Wei', team: 'Varsity Lions', metric: 'Points', value: 160 },
+    { rank: 1, name: '张小明', team: '雄狮队', metric: '得分', value: 185 },
+    { rank: 2, name: 'Mike Johnson', team: '蓝鲨队', metric: '得分', value: 172 },
+    { rank: 3, name: '李伟', team: '雄狮队', metric: '得分', value: 160 },
 ];
 
 export const Sports: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'leagues' | 'teams' | 'matches'>('overview');
   const [selectedLeague, setSelectedLeague] = useState<SportLeague | null>(null);
+  const [selectedMatch, setSelectedMatch] = useState<SportMatch | null>(null); 
   const [leagueDetailTab, setLeagueDetailTab] = useState<'standings' | 'fixtures' | 'stats' | 'management'>('standings');
+  const [matchDetailTab, setMatchDetailTab] = useState<'summary' | 'stats' | 'lineups'>('summary');
 
   // State for data management
   const [matches, setMatches] = useState<SportMatch[]>(MOCK_MATCHES);
   const [registrations, setRegistrations] = useState<LeagueRegistration[]>(MOCK_REGISTRATIONS);
+  const [teams, setTeams] = useState<SportTeam[]>(MOCK_TEAMS);
   
   // Modal States
   const [isAddMatchModalOpen, setIsAddMatchModalOpen] = useState(false);
   const [isEditMatchModalOpen, setIsEditMatchModalOpen] = useState(false);
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [isCreateTeamModalOpen, setIsCreateTeamModalOpen] = useState(false);
+  const [registeringLeague, setRegisteringLeague] = useState<SportLeague | null>(null);
   
   // Forms
-  const [newMatch, setNewMatch] = useState<Partial<SportMatch>>({ homeTeam: '', awayTeam: '', date: '', time: '', location: 'School Gym' });
+  const [newMatch, setNewMatch] = useState<Partial<SportMatch>>({ homeTeam: '', awayTeam: '', date: '', time: '', location: '本校体育馆' });
   const [editingMatch, setEditingMatch] = useState<SportMatch | null>(null);
+  const [registrationForm, setRegistrationForm] = useState({ teamName: '', coach: '', contact: '' });
+  const [newTeamForm, setNewTeamForm] = useState({ name: '', sport: 'Basketball', coach: '', membersCount: 0 });
 
   // Helpers
   const getSportIcon = (sport: string) => {
@@ -84,6 +110,16 @@ export const Sports: React.FC = () => {
       }
   };
 
+  const getStatusLabel = (status: string) => {
+      switch(status) {
+          case 'Ongoing': return '进行中';
+          case 'Upcoming': return '即将开始';
+          case 'Completed': return '已结束';
+          case 'Live': return '直播中';
+          default: return status;
+      }
+  };
+
   // --- Handlers ---
   
   const handleApproveRegistration = (id: string, approved: boolean) => {
@@ -98,16 +134,16 @@ export const Sports: React.FC = () => {
       const match: SportMatch = {
           id: `M-${Date.now()}`,
           leagueId: selectedLeague.id,
-          homeTeam: newMatch.homeTeam || 'Home Team',
-          awayTeam: newMatch.awayTeam || 'Away Team',
+          homeTeam: newMatch.homeTeam || '主队',
+          awayTeam: newMatch.awayTeam || '客队',
           date: newMatch.date || '',
           time: newMatch.time || '',
-          location: newMatch.location || 'TBD',
+          location: newMatch.location || '待定',
           status: 'Scheduled'
       };
       setMatches([...matches, match]);
       setIsAddMatchModalOpen(false);
-      setNewMatch({ homeTeam: '', awayTeam: '', date: '', time: '', location: 'School Gym' });
+      setNewMatch({ homeTeam: '', awayTeam: '', date: '', time: '', location: '本校体育馆' });
   };
 
   const handleUpdateScore = (e: React.FormEvent) => {
@@ -118,6 +154,213 @@ export const Sports: React.FC = () => {
       setEditingMatch(null);
   };
 
+  const openRegisterModal = (league: SportLeague) => {
+      setRegisteringLeague(league);
+      setIsRegisterModalOpen(true);
+  };
+
+  const handleRegisterLeague = (e: React.FormEvent) => {
+      e.preventDefault();
+      const target = registeringLeague || selectedLeague;
+      if (!target) return;
+      
+      const reg: LeagueRegistration = {
+          id: `R-${Date.now()}`,
+          leagueId: target.id,
+          teamName: registrationForm.teamName,
+          coach: registrationForm.coach,
+          contact: registrationForm.contact,
+          status: 'Pending',
+          submitDate: new Date().toISOString().split('T')[0]
+      };
+      setRegistrations([...registrations, reg]);
+      setIsRegisterModalOpen(false);
+      setRegistrationForm({ teamName: '', coach: '', contact: '' });
+      setRegisteringLeague(null);
+      alert('报名申请已提交，请等待管理员审核！');
+  };
+
+  const handleCreateTeam = (e: React.FormEvent) => {
+      e.preventDefault();
+      const team: SportTeam = {
+          id: `T-${Date.now()}`,
+          name: newTeamForm.name,
+          sport: newTeamForm.sport,
+          coach: newTeamForm.coach,
+          membersCount: newTeamForm.membersCount,
+          wins: 0,
+          losses: 0
+      };
+      setTeams([...teams, team]);
+      setIsCreateTeamModalOpen(false);
+      setNewTeamForm({ name: '', sport: 'Basketball', coach: '', membersCount: 0 });
+  };
+
+  // --- MATCH DETAIL VIEW RENDERER ---
+  if (selectedMatch) {
+      return (
+          <div className="p-8 space-y-6 flex flex-col h-[calc(100vh-64px)]">
+              <button 
+                onClick={() => setSelectedMatch(null)}
+                className="flex items-center gap-2 text-slate-500 hover:text-brand-600 transition-colors font-medium w-fit"
+              >
+                  <ChevronLeft size={20}/> 返回
+              </button>
+
+              {/* Match Header Scoreboard */}
+              <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl shadow-lg p-8 text-white relative overflow-hidden flex-shrink-0">
+                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+                  <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                      {/* Home Team */}
+                      <div className="flex flex-col items-center flex-1">
+                          <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center text-3xl font-bold mb-3 border-2 border-white/20">
+                              H
+                          </div>
+                          <h2 className="text-2xl font-bold text-center">{selectedMatch.homeTeam}</h2>
+                          <p className="text-slate-400 text-sm">主队</p>
+                      </div>
+
+                      {/* Score */}
+                      <div className="flex flex-col items-center">
+                          <div className="text-sm font-bold bg-white/20 px-3 py-1 rounded mb-4 backdrop-blur-sm">
+                              {selectedMatch.status === 'Finished' ? '终场比分' : getStatusLabel(selectedMatch.status)}
+                          </div>
+                          <div className="text-6xl font-black tracking-widest flex items-center gap-4">
+                              <span>{selectedMatch.scoreHome || 0}</span>
+                              <span className="text-slate-500">:</span>
+                              <span>{selectedMatch.scoreAway || 0}</span>
+                          </div>
+                          <div className="flex items-center gap-4 mt-4 text-slate-400 text-sm">
+                              <span className="flex items-center gap-1"><Calendar size={14}/> {selectedMatch.date}</span>
+                              <span className="flex items-center gap-1"><MapPin size={14}/> {selectedMatch.location}</span>
+                          </div>
+                      </div>
+
+                      {/* Away Team */}
+                      <div className="flex flex-col items-center flex-1">
+                          <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center text-3xl font-bold mb-3 border-2 border-white/20">
+                              A
+                          </div>
+                          <h2 className="text-2xl font-bold text-center">{selectedMatch.awayTeam}</h2>
+                          <p className="text-slate-400 text-sm">客队</p>
+                      </div>
+                  </div>
+              </div>
+
+              {/* Detail Tabs */}
+              <div className="flex border-b border-slate-200 flex-shrink-0">
+                  <button 
+                    onClick={() => setMatchDetailTab('summary')}
+                    className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${matchDetailTab === 'summary' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                  >
+                      比赛概况
+                  </button>
+                  <button 
+                    onClick={() => setMatchDetailTab('stats')}
+                    className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${matchDetailTab === 'stats' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                  >
+                      球员数据
+                  </button>
+              </div>
+
+              {/* Detail Content */}
+              <div className="flex-1 overflow-y-auto min-h-0">
+                  {matchDetailTab === 'summary' && (
+                      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                          <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-2">
+                              <Timer size={20} className="text-slate-500"/> 比赛时间轴
+                          </h3>
+                          <div className="space-y-6 relative before:absolute before:left-1/2 before:top-0 before:bottom-0 before:w-px before:bg-slate-200 before:-translate-x-1/2">
+                              {MOCK_MATCH_EVENTS.map((event, idx) => (
+                                  <div key={idx} className={`flex items-center gap-4 ${event.team === 'Home' ? 'justify-end md:pr-[50%]' : 'justify-start md:pl-[50%] flex-row-reverse md:flex-row'}`}>
+                                      <div className={`w-1/2 flex items-center gap-4 ${event.team === 'Home' ? 'justify-end' : 'justify-start'}`}>
+                                          <div className={`flex flex-col ${event.team === 'Home' ? 'items-end text-right' : 'items-start text-left'}`}>
+                                              <span className="font-bold text-slate-900">{event.type}</span>
+                                              <span className="text-sm text-slate-600">{event.description}</span>
+                                              {event.player && <span className="text-xs text-brand-600 font-medium">{event.player}</span>}
+                                          </div>
+                                          <div className={`w-12 h-12 rounded-full border-4 border-white shadow-sm flex items-center justify-center font-bold text-xs shrink-0 z-10 ${
+                                              event.team === 'Home' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'
+                                          }`}>
+                                              {event.time}
+                                          </div>
+                                      </div>
+                                  </div>
+                              ))}
+                          </div>
+                      </div>
+                  )}
+
+                  {matchDetailTab === 'stats' && (
+                      <div className="space-y-6">
+                          {/* Home Stats */}
+                          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                              <div className="p-4 border-b border-slate-200 bg-slate-50/50">
+                                  <h3 className="font-bold text-slate-800">{selectedMatch.homeTeam} - 球员数据</h3>
+                              </div>
+                              <table className="w-full text-left text-sm">
+                                  <thead className="bg-slate-50 text-slate-500">
+                                      <tr>
+                                          <th className="px-4 py-2">#</th>
+                                          <th className="px-4 py-2">球员</th>
+                                          <th className="px-4 py-2 text-right">得分 (Pts)</th>
+                                          <th className="px-4 py-2 text-right">篮板 (Reb)</th>
+                                          <th className="px-4 py-2 text-right">助攻 (Ast)</th>
+                                          <th className="px-4 py-2 text-right">抢断 (Stl)</th>
+                                      </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-slate-100">
+                                      {MOCK_PLAYER_STATS.filter(p => p.team === 'Home').map(player => (
+                                          <tr key={player.id}>
+                                              <td className="px-4 py-3 text-slate-500 font-mono">{player.number}</td>
+                                              <td className="px-4 py-3 font-medium text-slate-900">{player.name}</td>
+                                              <td className="px-4 py-3 text-right font-bold">{player.stats.Pts}</td>
+                                              <td className="px-4 py-3 text-right">{player.stats.Reb}</td>
+                                              <td className="px-4 py-3 text-right">{player.stats.Ast}</td>
+                                              <td className="px-4 py-3 text-right">{player.stats.Stl}</td>
+                                          </tr>
+                                      ))}
+                                  </tbody>
+                              </table>
+                          </div>
+
+                          {/* Away Stats */}
+                          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                              <div className="p-4 border-b border-slate-200 bg-slate-50/50">
+                                  <h3 className="font-bold text-slate-800">{selectedMatch.awayTeam} - 球员数据</h3>
+                              </div>
+                              <table className="w-full text-left text-sm">
+                                  <thead className="bg-slate-50 text-slate-500">
+                                      <tr>
+                                          <th className="px-4 py-2">#</th>
+                                          <th className="px-4 py-2">球员</th>
+                                          <th className="px-4 py-2 text-right">得分 (Pts)</th>
+                                          <th className="px-4 py-2 text-right">篮板 (Reb)</th>
+                                          <th className="px-4 py-2 text-right">助攻 (Ast)</th>
+                                          <th className="px-4 py-2 text-right">抢断 (Stl)</th>
+                                      </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-slate-100">
+                                      {MOCK_PLAYER_STATS.filter(p => p.team === 'Away').map(player => (
+                                          <tr key={player.id}>
+                                              <td className="px-4 py-3 text-slate-500 font-mono">{player.number}</td>
+                                              <td className="px-4 py-3 font-medium text-slate-900">{player.name}</td>
+                                              <td className="px-4 py-3 text-right font-bold">{player.stats.Pts}</td>
+                                              <td className="px-4 py-3 text-right">{player.stats.Reb}</td>
+                                              <td className="px-4 py-3 text-right">{player.stats.Ast}</td>
+                                              <td className="px-4 py-3 text-right">{player.stats.Stl}</td>
+                                          </tr>
+                                      ))}
+                                  </tbody>
+                              </table>
+                          </div>
+                      </div>
+                  )}
+              </div>
+          </div>
+      );
+  }
+
   // --- LEAGUE DETAIL VIEW RENDERER ---
   if (selectedLeague) {
       return (
@@ -127,7 +370,7 @@ export const Sports: React.FC = () => {
                 onClick={() => setSelectedLeague(null)}
                 className="flex items-center gap-2 text-slate-500 hover:text-brand-600 transition-colors font-medium w-fit"
               >
-                  <ChevronLeft size={20}/> Back to Sports Hub
+                  <ChevronLeft size={20}/> 返回体育中心
               </button>
 
               {/* League Header */}
@@ -141,23 +384,26 @@ export const Sports: React.FC = () => {
                           <div className="flex items-center gap-3 mb-2">
                               <h1 className="text-3xl font-bold text-slate-900">{selectedLeague.name}</h1>
                               <span className={`text-sm px-2.5 py-0.5 rounded-full font-bold border ${getStatusColor(selectedLeague.status)}`}>
-                                  {selectedLeague.status}
+                                  {getStatusLabel(selectedLeague.status)}
                               </span>
                           </div>
                           <p className="text-slate-500 flex items-center gap-4 text-sm font-medium">
-                              <span className="flex items-center gap-1"><Trophy size={16}/> Season {selectedLeague.season}</span>
+                              <span className="flex items-center gap-1"><Trophy size={16}/> 赛季 {selectedLeague.season}</span>
                               <span className="flex items-center gap-1"><Calendar size={16}/> {selectedLeague.startDate} - {selectedLeague.endDate}</span>
                           </p>
                       </div>
                       <div className="flex gap-3">
-                          <button className="px-4 py-2 border border-slate-200 rounded-lg bg-white hover:bg-slate-50 text-slate-700 font-medium text-sm">
-                              Download Rulebook
+                          <button 
+                            onClick={() => setIsRegisterModalOpen(true)}
+                            className="px-4 py-2 border border-brand-600 text-brand-600 bg-white rounded-lg hover:bg-brand-50 font-medium text-sm flex items-center gap-2"
+                          >
+                              <FileText size={16}/> 报名参赛
                           </button>
                           <button 
                             onClick={() => setLeagueDetailTab('management')}
                             className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 shadow-sm font-medium text-sm"
                           >
-                              Manage League
+                              赛事管理
                           </button>
                       </div>
                   </div>
@@ -165,15 +411,30 @@ export const Sports: React.FC = () => {
 
               {/* League Detail Tabs */}
               <div className="flex border-b border-slate-200 flex-shrink-0">
-                  {(['standings', 'fixtures', 'stats', 'management'] as const).map(tab => (
-                      <button 
-                        key={tab}
-                        onClick={() => setLeagueDetailTab(tab)}
-                        className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors capitalize ${leagueDetailTab === tab ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
-                      >
-                          {tab}
-                      </button>
-                  ))}
+                  <button 
+                    onClick={() => setLeagueDetailTab('standings')}
+                    className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${leagueDetailTab === 'standings' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                  >
+                      积分榜
+                  </button>
+                  <button 
+                    onClick={() => setLeagueDetailTab('fixtures')}
+                    className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${leagueDetailTab === 'fixtures' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                  >
+                      赛程赛果
+                  </button>
+                  <button 
+                    onClick={() => setLeagueDetailTab('stats')}
+                    className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${leagueDetailTab === 'stats' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                  >
+                      球员数据
+                  </button>
+                  <button 
+                    onClick={() => setLeagueDetailTab('management')}
+                    className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${leagueDetailTab === 'management' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                  >
+                      管理后台
+                  </button>
               </div>
 
               {/* Tab Content */}
@@ -183,14 +444,14 @@ export const Sports: React.FC = () => {
                           <table className="w-full text-left text-sm">
                               <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
                                   <tr>
-                                      <th className="px-6 py-4 w-20 text-center">Pos</th>
-                                      <th className="px-6 py-4">Team</th>
-                                      <th className="px-6 py-4 text-center">Played</th>
-                                      <th className="px-6 py-4 text-center">Won</th>
-                                      <th className="px-6 py-4 text-center">Drawn</th>
-                                      <th className="px-6 py-4 text-center">Lost</th>
-                                      <th className="px-6 py-4 text-center">Points</th>
-                                      <th className="px-6 py-4 text-right">Form</th>
+                                      <th className="px-6 py-4 w-20 text-center">排名</th>
+                                      <th className="px-6 py-4">队伍</th>
+                                      <th className="px-6 py-4 text-center">场次</th>
+                                      <th className="px-6 py-4 text-center">胜</th>
+                                      <th className="px-6 py-4 text-center">平</th>
+                                      <th className="px-6 py-4 text-center">负</th>
+                                      <th className="px-6 py-4 text-center">积分</th>
+                                      <th className="px-6 py-4 text-right">近期战绩</th>
                                   </tr>
                               </thead>
                               <tbody className="divide-y divide-slate-100">
@@ -228,26 +489,26 @@ export const Sports: React.FC = () => {
                   {leagueDetailTab === 'fixtures' && (
                       <div className="space-y-4">
                           <div className="flex justify-between items-center mb-2">
-                              <h3 className="font-bold text-slate-800">Match Schedule</h3>
+                              <h3 className="font-bold text-slate-800">比赛日程</h3>
                               <button 
                                 onClick={() => setIsAddMatchModalOpen(true)}
                                 className="flex items-center text-sm bg-brand-600 text-white px-3 py-1.5 rounded-lg hover:bg-brand-700 transition-colors shadow-sm"
                               >
-                                  <Plus size={16} className="mr-1"/> Add Match
+                                  <Plus size={16} className="mr-1"/> 添加比赛
                               </button>
                           </div>
                           {matches.filter(m => m.leagueId === selectedLeague.id).map(match => (
-                              <div key={match.id} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow">
+                              <div key={match.id} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow cursor-pointer" onClick={() => setSelectedMatch(match)}>
                                   <div className="flex-1 text-right">
                                       <h4 className="font-bold text-slate-900 text-lg">{match.homeTeam}</h4>
                                   </div>
                                   <div className="px-8 flex flex-col items-center relative group">
                                       {match.status === 'Finished' ? (
-                                          <div className="text-2xl font-black text-slate-900 bg-slate-100 px-4 py-1 rounded-lg cursor-pointer hover:bg-slate-200" onClick={() => { setEditingMatch(match); setIsEditMatchModalOpen(true); }}>
+                                          <div className="text-2xl font-black text-slate-900 bg-slate-100 px-4 py-1 rounded-lg hover:bg-slate-200" onClick={(e) => { e.stopPropagation(); setEditingMatch(match); setIsEditMatchModalOpen(true); }}>
                                               {match.scoreHome} - {match.scoreAway}
                                           </div>
                                       ) : (
-                                          <div className="text-xl font-bold text-slate-500 bg-slate-50 px-4 py-1 rounded-lg border border-slate-100 cursor-pointer hover:border-brand-300 hover:text-brand-600 transition-all" onClick={() => { setEditingMatch(match); setIsEditMatchModalOpen(true); }}>
+                                          <div className="text-xl font-bold text-slate-500 bg-slate-50 px-4 py-1 rounded-lg border border-slate-100 hover:border-brand-300 hover:text-brand-600 transition-all" onClick={(e) => { e.stopPropagation(); setEditingMatch(match); setIsEditMatchModalOpen(true); }}>
                                               {match.time}
                                           </div>
                                       )}
@@ -255,7 +516,7 @@ export const Sports: React.FC = () => {
                                       
                                       {/* Edit Hint */}
                                       <div className="absolute -top-6 opacity-0 group-hover:opacity-100 transition-opacity text-xs bg-slate-800 text-white px-2 py-1 rounded">
-                                          Click to Edit
+                                          点击修改
                                       </div>
                                   </div>
                                   <div className="flex-1 text-left">
@@ -264,7 +525,7 @@ export const Sports: React.FC = () => {
                               </div>
                           ))}
                           {matches.filter(m => m.leagueId === selectedLeague.id).length === 0 && (
-                              <div className="text-center py-12 text-slate-400">No matches found for this league</div>
+                              <div className="text-center py-12 text-slate-400">暂无比赛安排</div>
                           )}
                       </div>
                   )}
@@ -273,7 +534,7 @@ export const Sports: React.FC = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
                               <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                                  <TrendingUp size={20} className="text-brand-600"/> Top Scorers
+                                  <TrendingUp size={20} className="text-brand-600"/> 射手榜 / 得分榜
                               </h3>
                               <div className="space-y-4">
                                   {MOCK_TOP_PLAYERS.map((player) => (
@@ -300,16 +561,16 @@ export const Sports: React.FC = () => {
                           
                           <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-6 text-white shadow-lg flex flex-col justify-between">
                               <div>
-                                  <h3 className="font-bold text-xl mb-2">League MVP Race</h3>
-                                  <p className="opacity-80 text-sm">Based on performance rating</p>
+                                  <h3 className="font-bold text-xl mb-2">联赛 MVP 预测</h3>
+                                  <p className="opacity-80 text-sm">基于综合表现评分 (PER)</p>
                               </div>
                               <div className="flex items-center gap-4 mt-6">
                                   <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-2xl">
                                       <User size={32}/>
                                   </div>
                                   <div>
-                                      <p className="font-bold text-lg">Zhang Xiaoming</p>
-                                      <p className="text-indigo-200 text-sm">Varsity Lions</p>
+                                      <p className="font-bold text-lg">张小明</p>
+                                      <p className="text-indigo-200 text-sm">雄狮队</p>
                                       <div className="mt-2 text-xs bg-white/20 px-2 py-1 rounded inline-block">
                                           Rating: 9.8
                                       </div>
@@ -324,29 +585,29 @@ export const Sports: React.FC = () => {
                           {/* League Settings */}
                           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
                               <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                                  <Settings size={20} className="text-slate-500"/> League Settings
+                                  <Settings size={20} className="text-slate-500"/> 联赛设置
                               </h3>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                   <div>
-                                      <label className="block text-sm font-medium text-slate-700 mb-1">League Name</label>
+                                      <label className="block text-sm font-medium text-slate-700 mb-1">联赛名称</label>
                                       <input type="text" defaultValue={selectedLeague.name} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50"/>
                                   </div>
                                   <div>
-                                      <label className="block text-sm font-medium text-slate-700 mb-1">Season</label>
+                                      <label className="block text-sm font-medium text-slate-700 mb-1">赛季</label>
                                       <input type="text" defaultValue={selectedLeague.season} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50"/>
                                   </div>
                                   <div>
-                                      <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
+                                      <label className="block text-sm font-medium text-slate-700 mb-1">状态</label>
                                       <select defaultValue={selectedLeague.status} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50">
-                                          <option>Upcoming</option>
-                                          <option>Ongoing</option>
-                                          <option>Completed</option>
+                                          <option value="Upcoming">即将开始</option>
+                                          <option value="Ongoing">进行中</option>
+                                          <option value="Completed">已结束</option>
                                       </select>
                                   </div>
                               </div>
                               <div className="mt-4 flex justify-end">
                                   <button className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 text-sm font-medium">
-                                      <Save size={16}/> Save Changes
+                                      <Save size={16}/> 保存更改
                                   </button>
                               </div>
                           </div>
@@ -355,20 +616,20 @@ export const Sports: React.FC = () => {
                           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                               <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex justify-between items-center">
                                   <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                                      <ClipboardList size={20} className="text-brand-600"/> Team Registrations
+                                      <ClipboardList size={20} className="text-brand-600"/> 队伍报名管理
                                   </h3>
                                   <span className="text-xs bg-white border px-2 py-1 rounded text-slate-500">
-                                      {registrations.filter(r => r.leagueId === selectedLeague.id).length} Applicants
+                                      {registrations.filter(r => r.leagueId === selectedLeague.id).length} 条申请
                                   </span>
                               </div>
                               <table className="w-full text-left text-sm">
                                   <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
                                       <tr>
-                                          <th className="px-6 py-4">Team Name</th>
-                                          <th className="px-6 py-4">Coach</th>
-                                          <th className="px-6 py-4">Contact</th>
-                                          <th className="px-6 py-4">Status</th>
-                                          <th className="px-6 py-4 text-right">Actions</th>
+                                          <th className="px-6 py-4">队伍名称</th>
+                                          <th className="px-6 py-4">教练</th>
+                                          <th className="px-6 py-4">联系方式</th>
+                                          <th className="px-6 py-4">状态</th>
+                                          <th className="px-6 py-4 text-right">操作</th>
                                       </tr>
                                   </thead>
                                   <tbody className="divide-y divide-slate-100">
@@ -383,7 +644,7 @@ export const Sports: React.FC = () => {
                                                       reg.status === 'Rejected' ? 'bg-red-100 text-red-700' :
                                                       'bg-amber-100 text-amber-700'
                                                   }`}>
-                                                      {reg.status}
+                                                      {reg.status === 'Approved' ? '已批准' : reg.status === 'Rejected' ? '已拒绝' : '待审核'}
                                                   </span>
                                               </td>
                                               <td className="px-6 py-4 text-right">
@@ -391,13 +652,13 @@ export const Sports: React.FC = () => {
                                                       <div className="flex items-center justify-end gap-2">
                                                           <button 
                                                             onClick={() => handleApproveRegistration(reg.id, true)}
-                                                            className="p-1 text-emerald-600 hover:bg-emerald-50 rounded" title="Approve"
+                                                            className="p-1 text-emerald-600 hover:bg-emerald-50 rounded" title="批准"
                                                           >
                                                               <CheckCircle size={18}/>
                                                           </button>
                                                           <button 
                                                             onClick={() => handleApproveRegistration(reg.id, false)}
-                                                            className="p-1 text-red-600 hover:bg-red-50 rounded" title="Reject"
+                                                            className="p-1 text-red-600 hover:bg-red-50 rounded" title="拒绝"
                                                           >
                                                               <XCircle size={18}/>
                                                           </button>
@@ -407,7 +668,7 @@ export const Sports: React.FC = () => {
                                           </tr>
                                       ))}
                                       {registrations.filter(r => r.leagueId === selectedLeague.id).length === 0 && (
-                                          <tr><td colSpan={5} className="text-center py-8 text-slate-400">No registrations pending</td></tr>
+                                          <tr><td colSpan={5} className="text-center py-8 text-slate-400">暂无待审核的报名申请</td></tr>
                                       )}
                                   </tbody>
                               </table>
@@ -416,41 +677,90 @@ export const Sports: React.FC = () => {
                   )}
               </div>
 
+              {/* MODAL: REGISTER TEAM */}
+              {isRegisterModalOpen && (registeringLeague || selectedLeague) && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+                      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-scale-up">
+                          <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                              <h3 className="text-lg font-bold text-slate-900">
+                                  报名参加 {registeringLeague?.name || selectedLeague?.name}
+                              </h3>
+                              <button onClick={() => setIsRegisterModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1 rounded-full"><X size={20}/></button>
+                          </div>
+                          <form onSubmit={handleRegisterLeague} className="p-6 space-y-4">
+                              <div>
+                                  <label className="block text-sm font-medium text-slate-700 mb-1">队伍名称</label>
+                                  <input 
+                                    type="text" required placeholder="例如：高一(5)班 火箭队"
+                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none"
+                                    value={registrationForm.teamName}
+                                    onChange={e => setRegistrationForm({...registrationForm, teamName: e.target.value})}
+                                  />
+                              </div>
+                              <div>
+                                  <label className="block text-sm font-medium text-slate-700 mb-1">主教练</label>
+                                  <input 
+                                    type="text" required placeholder="教练姓名"
+                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none"
+                                    value={registrationForm.coach}
+                                    onChange={e => setRegistrationForm({...registrationForm, coach: e.target.value})}
+                                  />
+                              </div>
+                              <div>
+                                  <label className="block text-sm font-medium text-slate-700 mb-1">联系电话</label>
+                                  <input 
+                                    type="tel" required placeholder="联系人手机号"
+                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none"
+                                    value={registrationForm.contact}
+                                    onChange={e => setRegistrationForm({...registrationForm, contact: e.target.value})}
+                                  />
+                              </div>
+                              <div className="bg-blue-50 p-3 rounded-lg text-xs text-blue-800 border border-blue-100 mt-2">
+                                  注：您的申请将提交至联赛管理员进行审核，审核通过后您将收到通知。
+                              </div>
+                              <div className="pt-2">
+                                  <button type="submit" className="w-full py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-sm">提交报名</button>
+                              </div>
+                          </form>
+                      </div>
+                  </div>
+              )}
+
               {/* MODAL: ADD MATCH */}
               {isAddMatchModalOpen && (
                   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
                       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-scale-up">
                           <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                              <h3 className="text-lg font-bold text-slate-900">Schedule New Match</h3>
+                              <h3 className="text-lg font-bold text-slate-900">安排新比赛</h3>
                               <button onClick={() => setIsAddMatchModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1 rounded-full"><X size={20}/></button>
                           </div>
                           <form onSubmit={handleAddMatch} className="p-6 space-y-4">
                               <div className="grid grid-cols-2 gap-4">
                                   <div>
-                                      <label className="block text-sm font-medium text-slate-700 mb-1">Home Team</label>
+                                      <label className="block text-sm font-medium text-slate-700 mb-1">主队</label>
                                       <input type="text" className="w-full px-3 py-2 border border-slate-200 rounded-lg" value={newMatch.homeTeam} onChange={e => setNewMatch({...newMatch, homeTeam: e.target.value})} required/>
                                   </div>
                                   <div>
-                                      <label className="block text-sm font-medium text-slate-700 mb-1">Away Team</label>
+                                      <label className="block text-sm font-medium text-slate-700 mb-1">客队</label>
                                       <input type="text" className="w-full px-3 py-2 border border-slate-200 rounded-lg" value={newMatch.awayTeam} onChange={e => setNewMatch({...newMatch, awayTeam: e.target.value})} required/>
                                   </div>
                               </div>
                               <div className="grid grid-cols-2 gap-4">
                                   <div>
-                                      <label className="block text-sm font-medium text-slate-700 mb-1">Date</label>
+                                      <label className="block text-sm font-medium text-slate-700 mb-1">日期</label>
                                       <input type="date" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-600" value={newMatch.date} onChange={e => setNewMatch({...newMatch, date: e.target.value})} required/>
                                   </div>
                                   <div>
-                                      <label className="block text-sm font-medium text-slate-700 mb-1">Time</label>
+                                      <label className="block text-sm font-medium text-slate-700 mb-1">时间</label>
                                       <input type="time" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-600" value={newMatch.time} onChange={e => setNewMatch({...newMatch, time: e.target.value})} required/>
                                   </div>
                               </div>
                               <div>
-                                  <label className="block text-sm font-medium text-slate-700 mb-1">Location</label>
+                                  <label className="block text-sm font-medium text-slate-700 mb-1">地点</label>
                                   <input type="text" className="w-full px-3 py-2 border border-slate-200 rounded-lg" value={newMatch.location} onChange={e => setNewMatch({...newMatch, location: e.target.value})} />
                               </div>
                               <div className="pt-2">
-                                  <button type="submit" className="w-full py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium">Add Match</button>
+                                  <button type="submit" className="w-full py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium">确认添加</button>
                               </div>
                           </form>
                       </div>
@@ -462,7 +772,7 @@ export const Sports: React.FC = () => {
                   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
                       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-scale-up">
                           <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                              <h3 className="text-lg font-bold text-slate-900">Update Match Result</h3>
+                              <h3 className="text-lg font-bold text-slate-900">更新比赛结果</h3>
                               <button onClick={() => setIsEditMatchModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1 rounded-full"><X size={20}/></button>
                           </div>
                           <form onSubmit={handleUpdateScore} className="p-6 space-y-6">
@@ -489,20 +799,20 @@ export const Sports: React.FC = () => {
                               </div>
                               
                               <div>
-                                  <label className="block text-sm font-medium text-slate-700 mb-2">Match Status</label>
+                                  <label className="block text-sm font-medium text-slate-700 mb-2">比赛状态</label>
                                   <select 
                                     className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-white"
                                     value={editingMatch.status}
                                     onChange={e => setEditingMatch({...editingMatch, status: e.target.value as any})}
                                   >
-                                      <option value="Scheduled">Scheduled</option>
-                                      <option value="Live">Live</option>
-                                      <option value="Finished">Finished</option>
+                                      <option value="Scheduled">Scheduled (未开始)</option>
+                                      <option value="Live">Live (进行中)</option>
+                                      <option value="Finished">Finished (已结束)</option>
                                   </select>
                               </div>
 
                               <button type="submit" className="w-full py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium">
-                                  Update Result
+                                  更新结果
                               </button>
                           </form>
                       </div>
@@ -522,17 +832,30 @@ export const Sports: React.FC = () => {
           <p className="text-slate-500 mt-1">校队管理、赛事联赛与比赛日程。</p>
         </div>
         <div className="flex bg-slate-100 p-1 rounded-lg">
-            {(['overview', 'leagues', 'teams', 'matches'] as const).map(tab => (
-                <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all capitalize ${
-                        activeTab === tab ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-                    }`}
-                >
-                    {tab}
-                </button>
-            ))}
+            <button
+                onClick={() => setActiveTab('overview')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'overview' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+                总览
+            </button>
+            <button
+                onClick={() => setActiveTab('leagues')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'leagues' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+                联赛库
+            </button>
+            <button
+                onClick={() => setActiveTab('teams')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'teams' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+                校队管理
+            </button>
+            <button
+                onClick={() => setActiveTab('matches')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'matches' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+                比赛日程
+            </button>
         </div>
       </div>
 
@@ -544,8 +867,8 @@ export const Sports: React.FC = () => {
                   <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                       <div className="flex justify-between items-start">
                           <div>
-                              <p className="text-slate-500 text-xs uppercase font-bold tracking-wider">Active Teams</p>
-                              <h3 className="text-3xl font-bold text-slate-900 mt-1">{MOCK_TEAMS.length}</h3>
+                              <p className="text-slate-500 text-xs uppercase font-bold tracking-wider">活跃校队</p>
+                              <h3 className="text-3xl font-bold text-slate-900 mt-1">{teams.length}</h3>
                           </div>
                           <div className="p-3 bg-blue-50 text-blue-600 rounded-lg"><Users size={20}/></div>
                       </div>
@@ -553,7 +876,7 @@ export const Sports: React.FC = () => {
                   <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                       <div className="flex justify-between items-start">
                           <div>
-                              <p className="text-slate-500 text-xs uppercase font-bold tracking-wider">Matches This Month</p>
+                              <p className="text-slate-500 text-xs uppercase font-bold tracking-wider">本月比赛</p>
                               <h3 className="text-3xl font-bold text-slate-900 mt-1">12</h3>
                           </div>
                           <div className="p-3 bg-purple-50 text-purple-600 rounded-lg"><Calendar size={20}/></div>
@@ -562,7 +885,7 @@ export const Sports: React.FC = () => {
                   <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                       <div className="flex justify-between items-start">
                           <div>
-                              <p className="text-slate-500 text-xs uppercase font-bold tracking-wider">Leagues Joined</p>
+                              <p className="text-slate-500 text-xs uppercase font-bold tracking-wider">参与联赛</p>
                               <h3 className="text-3xl font-bold text-slate-900 mt-1">{MOCK_LEAGUES.filter(l => l.status !== 'Completed').length}</h3>
                           </div>
                           <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg"><Activity size={20}/></div>
@@ -571,7 +894,7 @@ export const Sports: React.FC = () => {
                   <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                       <div className="flex justify-between items-start">
                           <div>
-                              <p className="text-slate-500 text-xs uppercase font-bold tracking-wider">Trophies Won</p>
+                              <p className="text-slate-500 text-xs uppercase font-bold tracking-wider">所获荣誉</p>
                               <h3 className="text-3xl font-bold text-amber-500 mt-1">5</h3>
                           </div>
                           <div className="p-3 bg-amber-50 text-amber-600 rounded-lg"><Trophy size={20}/></div>
@@ -587,7 +910,7 @@ export const Sports: React.FC = () => {
                       </h3>
                       <div className="space-y-4">
                           {matches.filter(m => m.status === 'Finished').map(match => (
-                              <div key={match.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                              <div key={match.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100 cursor-pointer hover:bg-slate-50" onClick={() => setSelectedMatch(match)}>
                                   <div className="text-right flex-1">
                                       <span className="font-bold text-slate-900">{match.homeTeam}</span>
                                   </div>
@@ -608,7 +931,7 @@ export const Sports: React.FC = () => {
                   {/* Ongoing Leagues */}
                   <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
                       <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                          <Trophy size={20} className="text-amber-500"/> 正在进行的赛事
+                          <Trophy size={20} className="text-amber-500"/> 进行中赛事
                       </h3>
                       <div className="space-y-3">
                           {MOCK_LEAGUES.filter(l => l.status === 'Ongoing').map(league => (
@@ -619,7 +942,7 @@ export const Sports: React.FC = () => {
                                       </div>
                                       <div>
                                           <h4 className="font-bold text-slate-900 hover:text-brand-600 transition-colors">{league.name}</h4>
-                                          <p className="text-xs text-slate-500">{league.season} Season</p>
+                                          <p className="text-xs text-slate-500">{league.season}</p>
                                       </div>
                                   </div>
                                   <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">进行中</span>
@@ -648,7 +971,7 @@ export const Sports: React.FC = () => {
                           </div>
                           <div className="flex gap-2 mb-4">
                               <span className={`text-xs px-2 py-0.5 rounded font-medium border ${getStatusColor(league.status)}`}>
-                                  {league.status}
+                                  {getStatusLabel(league.status)}
                               </span>
                               <span className="text-xs px-2 py-0.5 rounded font-medium bg-slate-100 text-slate-600 border border-slate-200">
                                   {league.sport}
@@ -659,21 +982,29 @@ export const Sports: React.FC = () => {
                                   <Calendar size={14}/> {league.startDate} - {league.endDate}
                               </div>
                               <div className="flex items-center gap-2">
-                                  <Target size={14}/> Season: {league.season}
+                                  <Target size={14}/> 赛季: {league.season}
                               </div>
                           </div>
-                          <button 
-                            onClick={() => setSelectedLeague(league)}
-                            className="w-full py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 hover:text-brand-600 font-medium transition-colors"
-                          >
-                              View Details
-                          </button>
+                          <div className="flex gap-2 mt-auto">
+                              <button 
+                                onClick={() => setSelectedLeague(league)}
+                                className="flex-1 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 hover:text-brand-600 font-medium transition-colors"
+                              >
+                                  查看详情
+                              </button>
+                              <button 
+                                onClick={() => openRegisterModal(league)}
+                                className="flex-1 py-2 bg-brand-50 border border-brand-200 text-brand-600 rounded-lg hover:bg-brand-100 font-medium transition-colors flex items-center justify-center gap-1"
+                              >
+                                  <FileText size={14}/> 报名
+                              </button>
+                          </div>
                       </div>
                   </div>
               ))}
               <button className="border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center text-slate-400 hover:border-brand-300 hover:text-brand-600 transition-all min-h-[560px]">
                   <Plus size={32} className="mb-2"/>
-                  <span className="font-medium">Register New League</span>
+                  <span className="font-medium">注册新联赛</span>
               </button>
           </div>
       )}
@@ -682,29 +1013,32 @@ export const Sports: React.FC = () => {
       {activeTab === 'teams' && (
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col flex-1 min-h-0">
               <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex justify-between items-center">
-                  <h3 className="font-bold text-slate-800">校队列表 (School Teams)</h3>
-                  <button className="flex items-center px-3 py-1.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 text-sm font-medium">
-                      <Plus size={16} className="mr-2"/> Create Team
+                  <h3 className="font-bold text-slate-800">校队列表</h3>
+                  <button 
+                    onClick={() => setIsCreateTeamModalOpen(true)}
+                    className="flex items-center px-3 py-1.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 text-sm font-medium"
+                  >
+                      <Plus size={16} className="mr-2"/> 组建新队
                   </button>
               </div>
               <div className="overflow-y-auto flex-1">
                   <table className="w-full text-left">
                       <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-semibold sticky top-0 z-10">
                           <tr>
-                              <th className="px-6 py-4">Team Name</th>
-                              <th className="px-6 py-4">Sport</th>
-                              <th className="px-6 py-4">Coach</th>
-                              <th className="px-6 py-4">Members</th>
-                              <th className="px-6 py-4">Record (W-L)</th>
-                              <th className="px-6 py-4 text-right">Actions</th>
+                              <th className="px-6 py-4">队伍名称</th>
+                              <th className="px-6 py-4">项目</th>
+                              <th className="px-6 py-4">教练</th>
+                              <th className="px-6 py-4">成员数</th>
+                              <th className="px-6 py-4">战绩 (胜-负)</th>
+                              <th className="px-6 py-4 text-right">操作</th>
                           </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
-                          {MOCK_TEAMS.map(team => (
+                          {teams.map(team => (
                               <tr key={team.id} className="hover:bg-slate-50">
                                   <td className="px-6 py-4">
                                       <div className="font-bold text-slate-900">{team.name}</div>
-                                      {team.rank && team.rank <= 3 && <span className="text-xs text-amber-600 flex items-center gap-1 mt-0.5"><Award size={10}/> Ranked #{team.rank}</span>}
+                                      {team.rank && team.rank <= 3 && <span className="text-xs text-amber-600 flex items-center gap-1 mt-0.5"><Award size={10}/> 排名 #{team.rank}</span>}
                                   </td>
                                   <td className="px-6 py-4">
                                       <span className="flex items-center gap-2 text-sm text-slate-700">
@@ -712,7 +1046,7 @@ export const Sports: React.FC = () => {
                                       </span>
                                   </td>
                                   <td className="px-6 py-4 text-sm text-slate-600">{team.coach}</td>
-                                  <td className="px-6 py-4 text-sm text-slate-600">{team.membersCount} Athletes</td>
+                                  <td className="px-6 py-4 text-sm text-slate-600">{team.membersCount} 人</td>
                                   <td className="px-6 py-4">
                                       <span className="font-mono font-bold text-slate-800">{team.wins}</span>
                                       <span className="text-slate-400 mx-1">-</span>
@@ -739,28 +1073,28 @@ export const Sports: React.FC = () => {
                       <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                       <input 
                         type="text" 
-                        placeholder="Search matches..." 
+                        placeholder="搜索比赛..." 
                         className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                       />
                   </div>
                   <button className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2">
-                      <Filter size={16}/> Filter
+                      <Filter size={16}/> 筛选
                   </button>
               </div>
 
               {matches.map(match => (
-                  <div key={match.id} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                  <div key={match.id} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() => setSelectedMatch(match)}>
                       <div className="flex justify-between items-center mb-4">
                           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{MOCK_LEAGUES.find(l => l.id === match.leagueId)?.name}</span>
                           <span className={`text-xs px-2 py-0.5 rounded font-medium border ${getStatusColor(match.status)}`}>
-                              {match.status}
+                              {getStatusLabel(match.status)}
                           </span>
                       </div>
                       
                       <div className="flex items-center justify-between">
                           <div className="flex-1 text-right pr-8">
                               <h3 className="text-xl font-bold text-slate-900">{match.homeTeam}</h3>
-                              <p className="text-xs text-slate-500">Home</p>
+                              <p className="text-xs text-slate-500">主队</p>
                           </div>
                           
                           <div className="px-6 py-2 bg-slate-100 rounded-lg text-center min-w-[120px]">
@@ -776,16 +1110,217 @@ export const Sports: React.FC = () => {
 
                           <div className="flex-1 text-left pl-8">
                               <h3 className="text-xl font-bold text-slate-900">{match.awayTeam}</h3>
-                              <p className="text-xs text-slate-500">Away</p>
+                              <p className="text-xs text-slate-500">客队</p>
                           </div>
                       </div>
                       
                       <div className="mt-4 pt-4 border-t border-slate-100 flex justify-center text-xs text-slate-500 gap-6">
                           <span className="flex items-center gap-1"><MapPin size={12}/> {match.location}</span>
-                          <span className="flex items-center gap-1"><Clock size={12}/> Full Time</span>
+                          <span className="flex items-center gap-1"><Clock size={12}/> 常规时间</span>
                       </div>
                   </div>
               ))}
+          </div>
+      )}
+
+      {/* --- MODAL: REGISTER TEAM --- */}
+      {isRegisterModalOpen && (registeringLeague || selectedLeague) && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+              <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-scale-up">
+                  <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                      <h3 className="text-lg font-bold text-slate-900">
+                          报名参加 {registeringLeague?.name || selectedLeague?.name}
+                      </h3>
+                      <button onClick={() => setIsRegisterModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1 rounded-full"><X size={20}/></button>
+                  </div>
+                  <form onSubmit={handleRegisterLeague} className="p-6 space-y-4">
+                      <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">队伍名称</label>
+                          <input 
+                            type="text" required placeholder="例如：高一(5)班 火箭队"
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none"
+                            value={registrationForm.teamName}
+                            onChange={e => setRegistrationForm({...registrationForm, teamName: e.target.value})}
+                          />
+                      </div>
+                      <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">主教练</label>
+                          <input 
+                            type="text" required placeholder="教练姓名"
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none"
+                            value={registrationForm.coach}
+                            onChange={e => setRegistrationForm({...registrationForm, coach: e.target.value})}
+                          />
+                      </div>
+                      <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">联系电话</label>
+                          <input 
+                            type="tel" required placeholder="联系人手机号"
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none"
+                            value={registrationForm.contact}
+                            onChange={e => setRegistrationForm({...registrationForm, contact: e.target.value})}
+                          />
+                      </div>
+                      <div className="bg-blue-50 p-3 rounded-lg text-xs text-blue-800 border border-blue-100 mt-2">
+                          注：您的申请将提交至联赛管理员进行审核，审核通过后您将收到通知。
+                      </div>
+                      <div className="pt-2">
+                          <button type="submit" className="w-full py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-sm">提交报名</button>
+                      </div>
+                  </form>
+              </div>
+          </div>
+      )}
+
+      {/* --- MODAL: CREATE TEAM --- */}
+      {isCreateTeamModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+              <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-scale-up">
+                  <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                      <h3 className="text-lg font-bold text-slate-900">组建新队伍</h3>
+                      <button onClick={() => setIsCreateTeamModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1 rounded-full"><X size={20}/></button>
+                  </div>
+                  <form onSubmit={handleCreateTeam} className="p-6 space-y-4">
+                      <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">队伍名称</label>
+                          <input 
+                            type="text" required
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg"
+                            value={newTeamForm.name}
+                            onChange={e => setNewTeamForm({...newTeamForm, name: e.target.value})}
+                          />
+                      </div>
+                      <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">运动项目</label>
+                          <select 
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-white"
+                            value={newTeamForm.sport}
+                            onChange={e => setNewTeamForm({...newTeamForm, sport: e.target.value})}
+                          >
+                              <option value="Basketball">篮球</option>
+                              <option value="Football">足球</option>
+                              <option value="Volleyball">排球</option>
+                              <option value="Swimming">游泳</option>
+                              <option value="Badminton">羽毛球</option>
+                              <option value="Tennis">网球</option>
+                          </select>
+                      </div>
+                      <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">主教练</label>
+                          <input 
+                            type="text" required
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg"
+                            value={newTeamForm.coach}
+                            onChange={e => setNewTeamForm({...newTeamForm, coach: e.target.value})}
+                          />
+                      </div>
+                      <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">队员人数</label>
+                          <input 
+                            type="number" min="0"
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg"
+                            value={newTeamForm.membersCount}
+                            onChange={e => setNewTeamForm({...newTeamForm, membersCount: Number(e.target.value)})}
+                          />
+                      </div>
+                      <div className="pt-2">
+                          <button type="submit" className="w-full py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium">确认创建</button>
+                      </div>
+                  </form>
+              </div>
+          </div>
+      )}
+
+      {/* --- MODAL: ADD MATCH --- */}
+      {isAddMatchModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+              <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-scale-up">
+                  <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                      <h3 className="text-lg font-bold text-slate-900">安排新比赛</h3>
+                      <button onClick={() => setIsAddMatchModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1 rounded-full"><X size={20}/></button>
+                  </div>
+                  <form onSubmit={handleAddMatch} className="p-6 space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                          <div>
+                              <label className="block text-sm font-medium text-slate-700 mb-1">主队</label>
+                              <input type="text" className="w-full px-3 py-2 border border-slate-200 rounded-lg" value={newMatch.homeTeam} onChange={e => setNewMatch({...newMatch, homeTeam: e.target.value})} required/>
+                          </div>
+                          <div>
+                              <label className="block text-sm font-medium text-slate-700 mb-1">客队</label>
+                              <input type="text" className="w-full px-3 py-2 border border-slate-200 rounded-lg" value={newMatch.awayTeam} onChange={e => setNewMatch({...newMatch, awayTeam: e.target.value})} required/>
+                          </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                          <div>
+                              <label className="block text-sm font-medium text-slate-700 mb-1">日期</label>
+                              <input type="date" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-600" value={newMatch.date} onChange={e => setNewMatch({...newMatch, date: e.target.value})} required/>
+                          </div>
+                          <div>
+                              <label className="block text-sm font-medium text-slate-700 mb-1">时间</label>
+                              <input type="time" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-slate-600" value={newMatch.time} onChange={e => setNewMatch({...newMatch, time: e.target.value})} required/>
+                          </div>
+                      </div>
+                      <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">地点</label>
+                          <input type="text" className="w-full px-3 py-2 border border-slate-200 rounded-lg" value={newMatch.location} onChange={e => setNewMatch({...newMatch, location: e.target.value})} />
+                      </div>
+                      <div className="pt-2">
+                          <button type="submit" className="w-full py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium">确认添加</button>
+                      </div>
+                  </form>
+              </div>
+          </div>
+      )}
+
+      {/* --- MODAL: EDIT MATCH / ENTER SCORE --- */}
+      {isEditMatchModalOpen && editingMatch && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+              <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-scale-up">
+                  <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                      <h3 className="text-lg font-bold text-slate-900">更新比赛结果</h3>
+                      <button onClick={() => setIsEditMatchModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1 rounded-full"><X size={20}/></button>
+                  </div>
+                  <form onSubmit={handleUpdateScore} className="p-6 space-y-6">
+                      <div className="flex items-center justify-between gap-4">
+                          <div className="text-center flex-1">
+                              <h4 className="font-bold text-slate-900 mb-2">{editingMatch.homeTeam}</h4>
+                              <input 
+                                type="number" 
+                                className="w-20 px-2 py-2 border border-slate-200 rounded-lg text-center text-2xl font-bold"
+                                value={editingMatch.scoreHome || 0}
+                                onChange={e => setEditingMatch({...editingMatch, scoreHome: Number(e.target.value)})}
+                              />
+                          </div>
+                          <span className="text-xl font-bold text-slate-300">-</span>
+                          <div className="text-center flex-1">
+                              <h4 className="font-bold text-slate-900 mb-2">{editingMatch.awayTeam}</h4>
+                              <input 
+                                type="number" 
+                                className="w-20 px-2 py-2 border border-slate-200 rounded-lg text-center text-2xl font-bold"
+                                value={editingMatch.scoreAway || 0}
+                                onChange={e => setEditingMatch({...editingMatch, scoreAway: Number(e.target.value)})}
+                              />
+                          </div>
+                      </div>
+                      
+                      <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">比赛状态</label>
+                          <select 
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-white"
+                            value={editingMatch.status}
+                            onChange={e => setEditingMatch({...editingMatch, status: e.target.value as any})}
+                          >
+                              <option value="Scheduled">Scheduled (未开始)</option>
+                              <option value="Live">Live (进行中)</option>
+                              <option value="Finished">Finished (已结束)</option>
+                          </select>
+                      </div>
+
+                      <button type="submit" className="w-full py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium">
+                          更新结果
+                      </button>
+                  </form>
+              </div>
           </div>
       )}
     </div>
