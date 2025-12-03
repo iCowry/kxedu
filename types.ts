@@ -435,3 +435,49 @@ export interface LearningResource {
   author: string;
   downloads: number;
 }
+
+// --- SPORTS MODULE TYPES ---
+export interface SportLeague {
+  id: string;
+  name: string; // e.g. "High School Basketball League (HBL)"
+  sport: 'Basketball' | 'Football' | 'Volleyball' | 'Tennis' | 'Badminton' | 'Swimming' | 'TrackAndField';
+  season: string; // e.g. "2024-2025"
+  status: 'Upcoming' | 'Ongoing' | 'Completed';
+  startDate: string;
+  endDate: string;
+}
+
+export interface LeagueRegistration {
+  id: string;
+  leagueId: string;
+  teamName: string;
+  coach: string;
+  contact: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  submitDate: string;
+}
+
+export interface SportTeam {
+  id: string;
+  name: string;
+  sport: string; // Linked to SportLeague sport
+  coach: string;
+  membersCount: number;
+  wins: number;
+  losses: number;
+  draws?: number;
+  rank?: number;
+}
+
+export interface SportMatch {
+  id: string;
+  leagueId: string;
+  homeTeam: string;
+  awayTeam: string;
+  date: string;
+  time: string;
+  location: string;
+  scoreHome?: number;
+  scoreAway?: number;
+  status: 'Scheduled' | 'Live' | 'Finished';
+}

@@ -26,6 +26,7 @@ import { CompetitionPlanning } from './pages/CompetitionPlanning';
 import { KnowledgeBase } from './pages/KnowledgeBase';
 import { QuestionBank } from './pages/QuestionBank';
 import { TeachingSupport } from './pages/TeachingSupport';
+import { Sports } from './pages/Sports';
 import { AIChatBot } from './components/AIChatBot';
 import { CurrentUser, UserRole } from './types';
 
@@ -98,6 +99,7 @@ const App: React.FC = () => {
             <Route path="/research" element={<KnowledgeBase />} />
             <Route path="/questions" element={<QuestionBank />} />
             <Route path="/tutoring" element={<TeachingSupport />} />
+            <Route path="/sports" element={<Sports />} />
 
             <Route path="/staff" element={<StaffList />} />
             <Route path="/academic" element={<Academic />} />

@@ -20,7 +20,8 @@ import {
   GitBranch,
   Database,
   Coffee,
-  ChevronDown
+  ChevronDown,
+  Activity
 } from 'lucide-react';
 import { NavItem, CurrentUser, UserRole } from '../types';
 
@@ -36,6 +37,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { label: '教学教务 Academic', path: '/academic', icon: BookOpen, allowedRoles: ['SuperAdmin', 'TenantAdmin', 'AcademicDirector'] },
   { label: '学情管理 Learning', path: '/learning', icon: BookCheck, allowedRoles: ['SuperAdmin', 'TenantAdmin', 'AcademicDirector', 'HomeroomTeacher', 'SubjectTeacher', 'Student', 'Parent'] },
   { label: '教学辅导 Tutoring', path: '/tutoring', icon: Coffee, allowedRoles: ['HomeroomTeacher', 'SubjectTeacher', 'Student', 'Parent'] },
+  { label: '体育 Sports', path: '/sports', icon: Activity, allowedRoles: ['SuperAdmin', 'TenantAdmin', 'AcademicDirector', 'HomeroomTeacher', 'SubjectTeacher', 'Student'] },
   { label: '竞赛规划 Competitions', path: '/competitions', icon: Target, allowedRoles: ['SuperAdmin', 'TenantAdmin', 'AcademicDirector', 'SubjectTeacher', 'Student'] },
   { label: '院校排行 Rankings', path: '/rankings', icon: ListOrdered }, // Public/All
   { label: '升学分析 Analytics', path: '/analytics', icon: PieChart, allowedRoles: ['SuperAdmin', 'TenantAdmin', 'AcademicDirector', 'GradeDirector'] },
