@@ -271,6 +271,9 @@ export interface Homework {
   status: 'Draft' | 'Published' | 'Graded';
   publisher: string;
   description?: string;
+  type?: 'Normal' | 'DailyCheckIn' | 'Vacation';
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface HomeworkSubmission {

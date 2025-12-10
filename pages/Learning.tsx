@@ -1,18 +1,20 @@
+
 import React, { useState } from 'react';
-import { BookCheck, FileText, Clock, Plus, Filter, MoreHorizontal, CheckCircle2, AlertCircle, X, Calendar, PenTool, Eye } from 'lucide-react';
+import { BookCheck, FileText, Clock, Plus, Filter, MoreHorizontal, CheckCircle2, AlertCircle, X, Calendar, PenTool, Eye, ListChecks, Sun, Sparkles, Loader2 } from 'lucide-react';
 import { Homework, Exam } from '../types';
 import { useNavigate } from 'react-router-dom';
+import { sendMessageToGemini } from '../services/geminiService';
 
 const INITIAL_HOMEWORK: Homework[] = [
-  { id: 'HW-001', title: 'Calculus Ch.3 Exercises', subject: 'Math', targetClass: 'Class 1 (Grade 10)', deadline: '2024-11-25 23:59', submittedCount: 35, totalCount: 38, status: 'Published', publisher: 'Dr. Sarah Chen' },
-  { id: 'HW-002', title: 'Reading Report: Hamlet', subject: 'English', targetClass: 'Class 1 (Grade 10)', deadline: '2024-11-26 18:00', submittedCount: 12, totalCount: 38, status: 'Published', publisher: 'Ms. Emily Zhang' },
-  { id: 'HW-003', title: 'Physics Lab Report', subject: 'Physics', targetClass: 'Class 2 (Grade 11)', deadline: '2024-11-28 23:59', submittedCount: 0, totalCount: 40, status: 'Draft', publisher: 'Mr. Michael Brown' },
+  { id: 'HW-001', title: '高等数学第三章习题', subject: 'Math', targetClass: 'Class 1 (Grade 10)', deadline: '2024-11-25 23:59', submittedCount: 35, totalCount: 38, status: 'Published', publisher: 'Dr. Sarah Chen', type: 'Normal' },
+  { id: 'HW-002', title: '寒假英语阅读打卡', subject: 'English', targetClass: 'Class 1 (Grade 10)', startDate: '2025-01-15', endDate: '2025-02-15', deadline: '2025-02-15', submittedCount: 12, totalCount: 38, status: 'Published', publisher: 'Ms. Emily Zhang', type: 'DailyCheckIn' },
+  { id: 'HW-003', title: '物理实验报告：力学', subject: 'Physics', targetClass: 'Class 2 (Grade 11)', deadline: '2024-11-28 23:59', submittedCount: 0, totalCount: 40, status: 'Draft', publisher: 'Mr. Michael Brown', type: 'Normal' },
 ];
 
 const INITIAL_EXAMS: Exam[] = [
-  { id: 'EX-001', name: 'Fall Midterm Examination', type: 'Midterm', subject: 'All', date: '2024-11-01', targetGrades: ['Grade 10', 'Grade 11'], status: 'Completed', avgScore: 85.4 },
-  { id: 'EX-002', name: 'Mathematics Monthly Quiz 11', type: 'Quiz', subject: 'Math', date: '2024-11-30', targetGrades: ['Grade 12'], status: 'Scheduled' },
-  { id: 'EX-003', name: 'English Final Mock', type: 'Mock', subject: 'English', date: '2024-12-15', targetGrades: ['Grade 12'], status: 'Scheduled' },
+  { id: 'EX-001', name: '秋季期中考试', type: 'Midterm', subject: 'All', date: '2024-11-01', targetGrades: ['Grade 10', 'Grade 11'], status: 'Completed', avgScore: 85.4 },
+  { id: 'EX-002', name: '高三数学月考 (11月)', type: 'Quiz', subject: 'Math', date: '2024-11-30', targetGrades: ['Grade 12'], status: 'Scheduled' },
+  { id: 'EX-003', name: '英语期末模拟考', type: 'Mock', subject: 'English', date: '2024-12-15', targetGrades: ['Grade 12'], status: 'Scheduled' },
 ];
 
 export const Learning: React.FC = () => {
@@ -25,9 +27,10 @@ export const Learning: React.FC = () => {
   // Modals
   const [isHomeworkModalOpen, setIsHomeworkModalOpen] = useState(false);
   const [isExamModalOpen, setIsExamModalOpen] = useState(false);
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
 
   // Forms
-  const [newHomework, setNewHomework] = useState<Partial<Homework>>({ title: '', subject: 'Math', targetClass: '', deadline: '' });
+  const [newHomework, setNewHomework] = useState<Partial<Homework>>({ title: '', subject: 'Math', targetClass: '', deadline: '', type: 'Normal', startDate: '', endDate: '', description: '' });
   const [newExam, setNewExam] = useState<Partial<Exam>>({ name: '', type: 'Quiz', subject: 'Math', date: '', targetGrades: [] });
 
   // --- Handlers ---
@@ -38,15 +41,19 @@ export const Learning: React.FC = () => {
         title: newHomework.title!,
         subject: newHomework.subject!,
         targetClass: newHomework.targetClass || 'All Classes',
-        deadline: newHomework.deadline!,
+        deadline: newHomework.type === 'Normal' ? newHomework.deadline! : newHomework.endDate!, // Use endDate as deadline for ranges
+        startDate: newHomework.startDate,
+        endDate: newHomework.endDate,
         submittedCount: 0,
         totalCount: 40, // Mock class size
         status: 'Published',
-        publisher: 'Me'
+        publisher: 'Me',
+        description: newHomework.description,
+        type: newHomework.type as any
     };
     setHomeworkList([hw, ...homeworkList]);
     setIsHomeworkModalOpen(false);
-    setNewHomework({ title: '', subject: 'Math', targetClass: '', deadline: '' });
+    setNewHomework({ title: '', subject: 'Math', targetClass: '', deadline: '', type: 'Normal', startDate: '', endDate: '', description: '' });
   };
 
   const handleCreateExam = (e: React.FormEvent) => {
@@ -63,6 +70,35 @@ export const Learning: React.FC = () => {
     setExamList([...examList, ex]);
     setIsExamModalOpen(false);
     setNewExam({ name: '', type: 'Quiz', subject: 'Math', date: '', targetGrades: [] });
+  };
+
+  const handleAiSuggest = async () => {
+    if (!newHomework.title) {
+        alert('请先输入作业标题，AI 需要根据标题生成建议。');
+        return;
+    }
+    setIsAiGenerating(true);
+    try {
+        const prompt = `我是${newHomework.subject}老师，请为作业"${newHomework.title}"生成一段详细的作业说明。
+        类型：${newHomework.type === 'DailyCheckIn' ? '每日打卡任务' : '普通作业'}
+        内容包括：作业目标、具体要求、评分标准（如适用）和鼓励的话。
+        保持简洁清晰。`;
+        
+        const text = await sendMessageToGemini(prompt);
+        setNewHomework(prev => ({ ...prev, description: text }));
+    } catch (e) {
+        alert('AI 生成失败，请重试');
+    } finally {
+        setIsAiGenerating(false);
+    }
+  };
+
+  const getHomeworkTypeLabel = (type?: string) => {
+      switch(type) {
+          case 'DailyCheckIn': return { label: '每日打卡', icon: Calendar, color: 'text-purple-600 bg-purple-50 border-purple-200' };
+          case 'Vacation': return { label: '假期作业', icon: Sun, color: 'text-orange-600 bg-orange-50 border-orange-200' };
+          default: return { label: '日常作业', icon: FileText, color: 'text-blue-600 bg-blue-50 border-blue-200' };
+      }
   };
 
   return (
@@ -133,7 +169,7 @@ export const Learning: React.FC = () => {
                 : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
             }`}
           >
-            <FileText size={18}/> 日常作业管理
+            <ListChecks size={18}/> 作业管理
           </button>
           <button
             onClick={() => setActiveTab('exams')}
@@ -161,17 +197,25 @@ export const Learning: React.FC = () => {
                     <table className="w-full text-left">
                         <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-semibold">
                             <tr>
+                                <th className="px-6 py-4">作业类型</th>
                                 <th className="px-6 py-4">作业标题</th>
                                 <th className="px-6 py-4">科目 / 班级</th>
-                                <th className="px-6 py-4">截止时间</th>
-                                <th className="px-6 py-4">提交进度</th>
+                                <th className="px-6 py-4">时间安排</th>
+                                <th className="px-6 py-4">进度</th>
                                 <th className="px-6 py-4">状态</th>
                                 <th className="px-6 py-4 text-right">操作</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                            {homeworkList.map(hw => (
+                            {homeworkList.map(hw => {
+                                const typeConfig = getHomeworkTypeLabel(hw.type);
+                                return (
                                 <tr key={hw.id} className="hover:bg-slate-50 group cursor-pointer" onClick={() => navigate(`/learning/homework/${hw.id}`)}>
+                                    <td className="px-6 py-4">
+                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${typeConfig.color}`}>
+                                            <typeConfig.icon size={12}/> {typeConfig.label}
+                                        </span>
+                                    </td>
                                     <td className="px-6 py-4">
                                         <div className="font-medium text-slate-900 group-hover:text-brand-600 transition-colors">{hw.title}</div>
                                         <div className="text-xs text-slate-500">By: {hw.publisher}</div>
@@ -182,7 +226,11 @@ export const Learning: React.FC = () => {
                                         {hw.targetClass}
                                     </td>
                                     <td className="px-6 py-4 text-sm text-slate-600">
-                                        {hw.deadline}
+                                        {hw.type === 'Normal' ? (
+                                            <span>截止: {hw.deadline}</span>
+                                        ) : (
+                                            <span>{hw.startDate} <span className="text-slate-400">→</span> {hw.endDate}</span>
+                                        )}
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
@@ -211,7 +259,7 @@ export const Learning: React.FC = () => {
                                         </button>
                                     </td>
                                 </tr>
-                            ))}
+                            )})}
                         </tbody>
                     </table>
                 </div>
@@ -223,7 +271,7 @@ export const Learning: React.FC = () => {
                 <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex justify-between items-center">
                     <h3 className="font-bold text-slate-800">考试安排列表</h3>
                     <button className="flex items-center px-3 py-1.5 border border-slate-200 rounded-lg bg-white text-sm text-slate-600 hover:bg-slate-50">
-                        <Filter size={16} className="mr-2" /> 筛选类型
+                        <Filter size={16} className="mr-2" /> 筛选学科
                     </button>
                 </div>
                 <div className="overflow-x-auto">
@@ -284,14 +332,14 @@ export const Learning: React.FC = () => {
       {/* --- HOMEWORK MODAL --- */}
       {isHomeworkModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-scale-up">
-            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-scale-up flex flex-col max-h-[90vh]">
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 flex-shrink-0">
               <h3 className="text-lg font-bold text-slate-900">发布新作业</h3>
               <button onClick={() => setIsHomeworkModalOpen(false)} className="text-slate-400 hover:text-slate-600">
                 <X size={20} />
               </button>
             </div>
-            <form onSubmit={handleCreateHomework} className="p-6 space-y-4">
+            <form onSubmit={handleCreateHomework} className="p-6 space-y-4 flex-1 overflow-y-auto">
                <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">作业标题</label>
                   <input 
@@ -300,6 +348,18 @@ export const Learning: React.FC = () => {
                     value={newHomework.title}
                     onChange={e => setNewHomework({...newHomework, title: e.target.value})}
                   />
+               </div>
+               <div>
+                   <label className="block text-sm font-medium text-slate-700 mb-1">作业类型</label>
+                   <select 
+                      className="w-full px-4 py-2 border border-slate-200 rounded-lg bg-white"
+                      value={newHomework.type}
+                      onChange={e => setNewHomework({...newHomework, type: e.target.value as any})}
+                    >
+                        <option value="Normal">日常作业 (提交一次)</option>
+                        <option value="DailyCheckIn">每日打卡 (假期/习惯养成)</option>
+                        <option value="Vacation">假期作业 (项目式)</option>
+                    </select>
                </div>
                <div className="grid grid-cols-2 gap-4">
                    <div>
@@ -325,20 +385,67 @@ export const Learning: React.FC = () => {
                       />
                    </div>
                </div>
+
+               {newHomework.type === 'Normal' ? (
+                   <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">截止时间</label>
+                      <input 
+                        type="datetime-local" required
+                        className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-600"
+                        value={newHomework.deadline}
+                        onChange={e => setNewHomework({...newHomework, deadline: e.target.value})}
+                      />
+                   </div>
+               ) : (
+                   <div className="grid grid-cols-2 gap-4">
+                       <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">开始日期</label>
+                          <input 
+                            type="date" required
+                            className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-600"
+                            value={newHomework.startDate}
+                            onChange={e => setNewHomework({...newHomework, startDate: e.target.value})}
+                          />
+                       </div>
+                       <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">结束日期</label>
+                          <input 
+                            type="date" required
+                            className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-600"
+                            value={newHomework.endDate}
+                            onChange={e => setNewHomework({...newHomework, endDate: e.target.value})}
+                          />
+                       </div>
+                   </div>
+               )}
+               
                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">截止时间</label>
-                  <input 
-                    type="datetime-local" required
-                    className="w-full px-4 py-2 border border-slate-200 rounded-lg text-slate-600"
-                    value={newHomework.deadline}
-                    onChange={e => setNewHomework({...newHomework, deadline: e.target.value})}
+                  <div className="flex justify-between items-center mb-1">
+                      <label className="block text-sm font-medium text-slate-700">作业说明</label>
+                      <button 
+                        type="button"
+                        onClick={handleAiSuggest}
+                        disabled={isAiGenerating}
+                        className="text-xs flex items-center gap-1 text-purple-600 hover:text-purple-700 bg-purple-50 px-2 py-1 rounded-lg border border-purple-100 transition-colors disabled:opacity-50"
+                      >
+                          {isAiGenerating ? <Loader2 size={12} className="animate-spin"/> : <Sparkles size={12}/>}
+                          {isAiGenerating ? '生成中...' : 'AI 生成说明'}
+                      </button>
+                  </div>
+                  <textarea 
+                    rows={4}
+                    className="w-full px-4 py-2 border border-slate-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    placeholder="请输入详细的作业要求、评分标准等..."
+                    value={newHomework.description || ''}
+                    onChange={e => setNewHomework({...newHomework, description: e.target.value})}
                   />
                </div>
-               <div className="pt-4 flex gap-3">
-                   <button type="button" onClick={() => setIsHomeworkModalOpen(false)} className="flex-1 py-2 border border-slate-200 rounded-lg hover:bg-slate-50">取消</button>
-                   <button type="submit" className="flex-1 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700">发布</button>
-               </div>
             </form>
+            
+            <div className="p-6 pt-0 flex gap-3 bg-white border-t border-slate-100 mt-auto pt-4">
+                <button type="button" onClick={() => setIsHomeworkModalOpen(false)} className="flex-1 py-2 border border-slate-200 rounded-lg hover:bg-slate-50">取消</button>
+                <button type="button" onClick={handleCreateHomework} className="flex-1 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700">发布</button>
+            </div>
           </div>
         </div>
       )}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { MessageCircle, Bell, Users, Eye, Send, FileText, CheckCircle2, X, Plus, AlertTriangle, Paperclip, Layout } from 'lucide-react';
+import { MessageCircle, Bell, Users, Eye, Send, FileText, CheckCircle2, X, Plus, AlertTriangle, Paperclip, Layout, Sparkles, Loader2 } from 'lucide-react';
 import { Announcement } from '../types';
+import { sendMessageToGemini } from '../services/geminiService';
 
 const INITIAL_ANNOUNCEMENTS: Announcement[] = [
   { id: 'ANN-001', title: '关于2025年寒假放假安排的通知', content: '各位师生、家长：\n根据教育局规定，我校2025年寒假放假时间定于...', targetGroup: 'All', priority: 'High', sender: '教务处', publishDate: '2025-01-10', readCount: 2150, totalCount: 2400 },
@@ -11,6 +12,7 @@ const INITIAL_ANNOUNCEMENTS: Announcement[] = [
 export const Communication: React.FC = () => {
   const [announcements, setAnnouncements] = useState<Announcement[]>(INITIAL_ANNOUNCEMENTS);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   
   // Form State
   const [newAnnounce, setNewAnnounce] = useState<Partial<Announcement>>({
@@ -58,6 +60,29 @@ export const Communication: React.FC = () => {
     });
   };
 
+  const handleAiDraft = async () => {
+    if (!newAnnounce.title) {
+        alert('请先输入通知标题，以便AI生成相关内容。');
+        return;
+    }
+    
+    setIsGenerating(true);
+    try {
+        const prompt = `请为学校"${newAnnounce.sender}"起草一份通知。
+        标题：${newAnnounce.title}
+        接收对象：${newAnnounce.targetGroup === 'All' ? '全体师生' : newAnnounce.targetGroup}
+        要求：语气正式、亲切，包含开头问候、正文详情（根据标题合理推断）和结尾落款。内容控制在200字以内。`;
+        
+        const generatedText = await sendMessageToGemini(prompt);
+        setNewAnnounce(prev => ({ ...prev, content: generatedText }));
+    } catch (error) {
+        console.error('AI Draft failed', error);
+        alert('AI 生成失败，请重试');
+    } finally {
+        setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="p-8 space-y-6 flex flex-col h-[calc(100vh-64px)]">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -101,7 +126,7 @@ export const Communication: React.FC = () => {
                                 <h4 className="text-lg font-semibold text-slate-900 group-hover:text-brand-600 transition-colors line-clamp-1">{ann.title}</h4>
                                 <span className="text-xs text-slate-400 whitespace-nowrap ml-4">{ann.publishDate}</span>
                             </div>
-                            <p className="text-sm text-slate-600 mb-3 line-clamp-2">{ann.content}</p>
+                            <p className="text-sm text-slate-600 mb-3 line-clamp-2 whitespace-pre-wrap">{ann.content}</p>
                             <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500">
                                 <span className={`flex items-center gap-1 px-2 py-0.5 rounded border ${
                                     ann.targetGroup === 'All' ? 'bg-blue-50 text-blue-700 border-blue-100' :
@@ -278,9 +303,20 @@ export const Communication: React.FC = () => {
                </div>
 
                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">通知正文</label>
+                  <div className="flex justify-between items-center mb-1">
+                      <label className="block text-sm font-medium text-slate-700">通知正文</label>
+                      <button 
+                        type="button"
+                        onClick={handleAiDraft}
+                        disabled={isGenerating}
+                        className="text-xs flex items-center gap-1 text-purple-600 hover:text-purple-700 bg-purple-50 px-2 py-1 rounded-lg border border-purple-100 transition-colors disabled:opacity-50"
+                      >
+                          {isGenerating ? <Loader2 size={12} className="animate-spin"/> : <Sparkles size={12}/>}
+                          {isGenerating ? 'AI 撰写中...' : 'AI 帮我写'}
+                      </button>
+                  </div>
                   <textarea 
-                    required placeholder="请输入通知详细内容..."
+                    required placeholder="请输入通知详细内容，或使用 AI 辅助生成..."
                     rows={6}
                     className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
                     value={newAnnounce.content}
@@ -295,11 +331,6 @@ export const Communication: React.FC = () => {
                     <button type="button" className="text-xs text-brand-600 hover:text-brand-700 font-medium border border-brand-200 px-3 py-1 rounded bg-white">
                         选择文件
                     </button>
-               </div>
-
-               <div className="flex items-center gap-2 p-3 bg-blue-50 text-blue-800 rounded-lg text-sm">
-                  <Bell size={16} />
-                  <span>发布后将立即通过 App 和短信推送到接收人终端。</span>
                </div>
             </form>
 
