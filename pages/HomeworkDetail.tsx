@@ -14,7 +14,8 @@ const MOCK_HOMEWORK: Homework = {
   totalCount: 38,
   status: 'Published',
   publisher: 'Dr. Sarah Chen',
-  description: 'Complete problems 1-20 in Chapter 3. Show all work for derivatives. Submit as PDF.'
+  description: 'Complete problems 1-20 in Chapter 3. Show all work for derivatives. Submit as PDF.',
+  type: 'Normal'
 };
 
 const MOCK_SUBMISSIONS: HomeworkSubmission[] = [

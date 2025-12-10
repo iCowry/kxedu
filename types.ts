@@ -265,25 +265,35 @@ export interface Homework {
   title: string;
   subject: string;
   targetClass: string;
-  deadline: string;
+  deadline: string; // Used for Normal, or end of vacation
   submittedCount: number;
   totalCount: number;
   status: 'Draft' | 'Published' | 'Graded';
   publisher: string;
   description?: string;
-  type?: 'Normal' | 'DailyCheckIn' | 'Vacation';
+  // New fields
+  type: 'Normal' | 'Vacation' | 'DailyCheckIn';
   startDate?: string;
   endDate?: string;
+}
+
+export interface CheckInLog {
+  date: string;
+  status: 'Completed' | 'Missed';
+  imageUrl?: string;
+  timestamp?: string;
+  comment?: string;
 }
 
 export interface HomeworkSubmission {
   studentId: string;
   studentName: string;
-  status: 'Submitted' | 'Late' | 'Missing' | 'Graded';
+  status: 'Submitted' | 'Late' | 'Missing' | 'Graded' | 'InProgress';
   submitTime?: string;
   score?: number;
   comment?: string;
   attachmentUrl?: string;
+  checkInLogs?: CheckInLog[];
 }
 
 export interface Exam {
@@ -328,6 +338,8 @@ export interface TrainingPlan {
   endDate: string;
   description: string;
   coach: string;
+  linkedQuestionIds?: string[];
+  questionCount?: number;
 }
 
 // --- KNOWLEDGE BASE TYPES ---
@@ -355,6 +367,7 @@ export interface Question {
   subject: string;
   grade: string; // e.g. "High School" or "Grade 10"
   knowledgePoint?: string; // Linked knowledge point title
+  knowledgePointId?: string; // ID Link
   tags?: string[];
   createdAt: string;
   author: string;
