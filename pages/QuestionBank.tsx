@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
-import { Database, Filter, Plus, Search, Eye, Edit2, Trash2, CheckCircle, HelpCircle, Layers, X, Save, FileText, ChevronRight, ShoppingCart, List, Folder, AlertCircle, Book, Download, GraduationCap, Video, ChevronLeft, Clock, File } from 'lucide-react';
+import { Database, Filter, Plus, Search, Eye, Edit2, Trash2, CheckCircle, HelpCircle, Layers, X, Save, FileText, ChevronRight, ShoppingCart, List, Folder, AlertCircle, Book, Download, GraduationCap, Video, ChevronLeft, Clock, File, ChevronDown } from 'lucide-react';
 import { Question, ExamPaper, TextbookResource, ExamPaperStructure, TextbookChapter } from '../types';
 
 // --- MOCK DATA ---
 const MOCK_QUESTIONS: Question[] = [
+  // --- High School Questions ---
   { 
     id: 'Q1001', 
     type: 'SingleChoice', 
@@ -67,6 +67,84 @@ const MOCK_QUESTIONS: Question[] = [
     createdAt: '2024-11-05', 
     author: 'Dr. Chen' 
   },
+
+  // --- Grade 4 Math Questions (Gaosi Guide Related) ---
+  {
+    id: 'Q-GS4-001',
+    type: 'FillBlank',
+    subject: 'Math',
+    grade: 'Primary School',
+    difficulty: 2,
+    content: '计算：$125 \\times 32 \\times 25 = \\_\\_\\_\\_\\_\\_$',
+    answer: '100000',
+    analysis: '原式 = $125 \\times (8 \\times 4) \\times 25 = (125 \\times 8) \\times (4 \\times 25) = 1000 \\times 100 = 100000$。',
+    knowledgePoint: '乘法巧算',
+    source: '高思导引四年级',
+    tags: ['计算', '结合律'],
+    createdAt: '2024-11-20',
+    author: 'Math Team'
+  },
+  {
+    id: 'Q-GS4-002',
+    type: 'Essay',
+    subject: 'Math',
+    grade: 'Primary School',
+    difficulty: 3,
+    content: '甲、乙两堆货物共180吨，甲堆货物运走20吨后，剩下的货物质量是乙堆的3倍。求甲、乙两堆货物原来各有多少吨？',
+    answer: '甲堆140吨，乙堆40吨',
+    analysis: '设乙堆为1份，则甲堆运走20吨后为3份。总份数变化为：180-20=160吨。1份(乙) = 160 ÷ (3+1) = 40吨。甲 = 180 - 40 = 140吨。',
+    knowledgePoint: '和倍问题',
+    source: '高思导引四年级',
+    tags: ['应用题', '画图法'],
+    createdAt: '2024-11-21',
+    author: 'Math Team'
+  },
+  {
+    id: 'Q-GS4-003',
+    type: 'SingleChoice',
+    subject: 'Math',
+    grade: 'Primary School',
+    difficulty: 3,
+    content: '鸡兔同笼，头共35，足共94，问兔子有多少只？',
+    options: ['12', '23', '10', '25'],
+    answer: 'A (12)',
+    analysis: '假设全是鸡，脚应为 35×2=70只，比实际少 94-70=24只。每把一只鸡换成兔，脚增加2只。兔数 = 24÷2 = 12只。',
+    knowledgePoint: '鸡兔同笼',
+    source: '经典奥数',
+    tags: ['假设法', '应用题'],
+    createdAt: '2024-11-22',
+    author: 'Math Team'
+  },
+  {
+    id: 'Q-GS4-004',
+    type: 'FillBlank',
+    subject: 'Math',
+    grade: 'Primary School',
+    difficulty: 4,
+    content: '定义新运算 $a \\otimes b = 3a + 2b$，求 $(4 \\otimes 5) \\otimes 2 = \\_\\_\\_\\_\\_\\_$',
+    answer: '70',
+    analysis: '$4 \\otimes 5 = 3\\times4 + 2\\times5 = 12+10=22$。然后 $22 \\otimes 2 = 3\\times22 + 2\\times2 = 66+4=70$。',
+    knowledgePoint: '定义新运算',
+    source: '高思导引四年级',
+    tags: ['代数', '新定义'],
+    createdAt: '2024-11-22',
+    author: 'Math Team'
+  },
+  {
+    id: 'Q-GS4-005',
+    type: 'Essay',
+    subject: 'Math',
+    grade: 'Primary School',
+    difficulty: 4,
+    content: '如图，一个长方形被两条直线分成四个小长方形，其中三个的面积分别是12、15、20，求阴影部分（第四个小长方形）的面积。',
+    answer: '16 或 25 (取决于位置关系，本题缺图假设对角关系)',
+    analysis: '长方形面积比性质：对角长方形面积乘积相等。若12与20对角，则 $12\\times20 = 15 \\times x$，x=16。',
+    knowledgePoint: '长方形面积',
+    source: '高思导引四年级',
+    tags: ['几何', '面积模型'],
+    createdAt: '2024-11-23',
+    author: 'Math Team'
+  }
 ];
 
 const MOCK_PAPERS: ExamPaper[] = [
@@ -142,35 +220,192 @@ const MOCK_TEXTBOOKS: TextbookResource[] = [
                     { id: 'R1-1', type: 'PPT', name: '1.1 集合的概念.ppt', size: '5.2 MB' },
                     { id: 'R1-2', type: 'Video', name: '名师讲解：集合的运算.mp4', size: '120 MB' },
                     { id: 'R1-3', type: 'PDF', name: '第一章同步练习题.pdf', size: '1.5 MB' }
-                ]
+                ],
+                knowledgePoints: ['集合的概念', '集合的运算', '充分必要条件']
             },
             { 
                 id: 'CH2', title: '第二章 一元二次函数、方程和不等式', 
                 resources: [
                     { id: 'R2-1', type: 'PPT', name: '2.1 基本不等式.ppt', size: '4.8 MB' },
                     { id: 'R2-2', type: 'Word', name: '单元测试卷.docx', size: '0.8 MB' }
-                ]
+                ],
+                knowledgePoints: ['一元二次不等式', '基本不等式']
             },
-            { id: 'CH3', title: '第三章 函数的概念与性质', resources: [] }
+            { id: 'CH3', title: '第三章 函数的概念与性质', resources: [], knowledgePoints: ['函数的概念', '单调性', '奇偶性'] }
         ]
     },
     { id: 'TB002', title: '北师大版初中物理八年级下册 课课练', subject: 'Physics', grade: 'Grade 8', version: '北师大版', type: 'Workbook', author: '编写组', downloadCount: 8000 },
     { id: 'TB003', title: '新概念英语第二册 重点语法微课', subject: 'English', grade: 'Middle School', version: '通用', type: 'MicroClass', author: '新东方', downloadCount: 20000 },
+    
+    // --- GAOSI TEXTBOOKS (Primary School) ---
+    { 
+        id: 'TB-GS3-Guide', 
+        title: '高思学校竞赛数学导引 (三年级)', 
+        subject: 'Math', 
+        grade: 'Primary School', 
+        version: '高思版', 
+        type: 'Guide', 
+        author: '徐鸣皋', 
+        downloadCount: 25000,
+        description: '华语世界最畅销的小学数学竞赛辅导用书之一，被誉为“奥数红宝书”。包含兴趣篇、拓展篇、超越篇不同难度试题。',
+        chapters: [
+            { 
+                id: 'GS3-C1', title: '第1讲 加减法巧算', 
+                knowledgePoints: ['凑整法', '基准数法', '分组法'],
+                resources: [
+                    { id: 'R-GS3-1-1', type: 'PDF', name: '第1讲 电子教材.pdf', size: '4.5 MB' },
+                    { id: 'R-GS3-1-2', type: 'Video', name: '名师精讲：速算巧算.mp4', size: '85 MB' }
+                ]
+            },
+            { 
+                id: 'GS3-C2', title: '第2讲 基本应用题', 
+                knowledgePoints: ['和差倍问题', '植树问题'],
+                resources: [
+                    { id: 'R-GS3-2-1', type: 'PDF', name: '第2讲 电子教材.pdf', size: '4.2 MB' }
+                ]
+            },
+            { id: 'GS3-C3', title: '第3讲 间隔与方阵', resources: [], knowledgePoints: ['植树问题', '方阵问题'] },
+            { id: 'GS3-C4', title: '第4讲 简单枚举', resources: [], knowledgePoints: ['分类枚举', '有序枚举'] },
+        ]
+    },
+    { 
+        id: 'TB-GS3-Textbook', 
+        title: '高思学校竞赛数学课本 (三年级上)', 
+        subject: 'Math', 
+        grade: 'Primary School', 
+        version: '高思版', 
+        type: 'Textbook', 
+        author: '高思教育', 
+        downloadCount: 18000,
+        description: '适合基础知识的学习与巩固，内容生动有趣，配合导引使用效果更佳。',
+        chapters: [
+            { 
+                id: 'GSKB3-C1', title: '第一课 乘除法入门', 
+                knowledgePoints: ['乘法口诀', '除法竖式'],
+                resources: [
+                    { id: 'R-GSKB3-1', type: 'PDF', name: '第一课 课本扫描件.pdf', size: '15 MB' }
+                ]
+            },
+            { 
+                id: 'GSKB3-C2', title: '第二课 巧算乘除法', 
+                knowledgePoints: ['乘法分配律', '提取公因数'],
+                resources: [
+                    { id: 'R-GSKB3-2', type: 'PDF', name: '第二课 课本扫描件.pdf', size: '14 MB' },
+                    { id: 'R-GSKB3-2-2', type: 'Word', name: '课后作业.docx', size: '0.5 MB' }
+                ]
+            }
+        ]
+    },
+    { 
+        id: 'TB-GS4-Guide', 
+        title: '高思学校竞赛数学导引 (四年级)', 
+        subject: 'Math', 
+        grade: 'Primary School', 
+        version: '高思版', 
+        type: 'Guide', 
+        author: '徐鸣皋', 
+        downloadCount: 22000,
+        description: '四年级竞赛数学必备，涵盖整数计算、几何图形、行程问题等核心模块。重点培养学生在复杂计算和逻辑推理方面的能力。',
+        chapters: [
+            { 
+                id: 'GS4-C1', title: '第1讲 整数计算综合', 
+                knowledgePoints: ['乘法巧算', '提取公因数', '定义新运算'], 
+                resources: [
+                    { id: 'R-GS4-1-1', type: 'PDF', name: '第一讲 知识点总结.pdf', size: '1.2 MB' }
+                ] 
+            },
+            { 
+                id: 'GS4-C2', title: '第2讲 和差倍问题', 
+                knowledgePoints: ['和倍问题', '差倍问题', '和差问题'], 
+                resources: [
+                    { id: 'R-GS4-2-1', type: 'Video', name: '名师精讲：画图解和差倍.mp4', size: '150 MB' }
+                ] 
+            },
+            { 
+                id: 'GS4-C3', title: '第3讲 鸡兔同笼与假设法', 
+                knowledgePoints: ['鸡兔同笼', '假设法'], 
+                resources: [] 
+            },
+            { 
+                id: 'GS4-C4', title: '第4讲 多位数与小数', 
+                knowledgePoints: ['小数的意义', '位值原理'], 
+                resources: [] 
+            },
+            { 
+                id: 'GS4-C5', title: '第5讲 几何图形与面积', 
+                knowledgePoints: ['长方形面积', '正方形面积', '割补法'], 
+                resources: [] 
+            }
+        ]
+    },
+    { 
+        id: 'TB-GS5-Guide', 
+        title: '高思学校竞赛数学导引 (五年级)', 
+        subject: 'Math', 
+        grade: 'Primary School', 
+        version: '高思版', 
+        type: 'Guide', 
+        author: '徐鸣皋', 
+        downloadCount: 28000,
+        description: '高年级竞赛冲刺。重点攻克分数计算、比例模型、数论综合。',
+        chapters: [
+            { id: 'GS5-C1', title: '第1讲 分数计算', knowledgePoints: ['裂项消去', '换元法'], resources: [] },
+            { id: 'GS5-C2', title: '第2讲 直线形计算', knowledgePoints: ['鸟头模型', '蝴蝶模型', '燕尾模型'], resources: [] }
+        ]
+    },
+    { 
+        id: 'TB-GS6-Guide', 
+        title: '高思学校竞赛数学导引 (六年级)', 
+        subject: 'Math', 
+        grade: 'Primary School', 
+        version: '高思版', 
+        type: 'Guide', 
+        author: '徐鸣皋', 
+        downloadCount: 30000,
+        description: '小升初及各大杯赛总复习利器。',
+        chapters: []
+    }
 ];
 
 // --- TREE DATA (MOCK) ---
 const KNOWLEDGE_TREE = [
-    { title: '集合与常用逻辑用语', id: 'T1' },
-    { title: '一元二次函数、方程和不等式', id: 'T2' },
-    { title: '函数的概念与性质', id: 'T3', children: [
-        { title: '函数的概念', id: 'T3-1' },
-        { title: '函数的单调性', id: 'T3-2' },
-        { title: '函数的奇偶性', id: 'T3-3' },
+    // --- High School ---
+    { title: '高中数学 (High School)', id: 'HS', children: [
+        { title: '集合与常用逻辑用语', id: 'T1' },
+        { title: '一元二次函数、方程和不等式', id: 'T2' },
+        { title: '函数的概念与性质', id: 'T3', children: [
+            { title: '函数的概念', id: 'T3-1' },
+            { title: '函数的单调性', id: 'T3-2' },
+            { title: '函数的奇偶性', id: 'T3-3' },
+        ]},
+        { title: '导数及其应用', id: 'T4', children: [
+            { title: '导数的概念', id: 'T4-1' },
+            { title: '导数的运算', id: 'T4-2' },
+            { title: '导数在研究函数中的应用', id: 'T4-3' },
+        ]},
     ]},
-    { title: '导数及其应用', id: 'T4', children: [
-        { title: '导数的概念', id: 'T4-1' },
-        { title: '导数的运算', id: 'T4-2' },
-        { title: '导数在研究函数中的应用', id: 'T4-3' },
+    // --- Primary School (Grade 4) ---
+    { title: '小学数学 (四年级)', id: 'PS4', children: [
+        { title: '计算综合', id: 'PS4-Calc', children: [
+            { title: '乘法巧算', id: 'PS4-Calc-1' },
+            { title: '提取公因数', id: 'PS4-Calc-2' },
+            { title: '定义新运算', id: 'PS4-Calc-3' },
+        ]},
+        { title: '应用题专题', id: 'PS4-App', children: [
+            { title: '和差倍问题', id: 'PS4-App-1' },
+            { title: '鸡兔同笼', id: 'PS4-App-2' },
+            { title: '年龄问题', id: 'PS4-App-3' },
+            { title: '还原问题', id: 'PS4-App-4' },
+        ]},
+        { title: '几何与图形', id: 'PS4-Geo', children: [
+            { title: '长方形面积', id: 'PS4-Geo-1' },
+            { title: '巧求周长', id: 'PS4-Geo-2' },
+            { title: '图形计数', id: 'PS4-Geo-3' },
+        ]},
+        { title: '组合与逻辑', id: 'PS4-Comb', children: [
+            { title: '抽屉原理', id: 'PS4-Comb-1' },
+            { title: '加乘原理', id: 'PS4-Comb-2' },
+        ]}
     ]},
 ];
 
@@ -201,6 +436,7 @@ export const QuestionBank: React.FC = () => {
   });
   const [activeKnowledgeId, setActiveKnowledgeId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [expandedTreeNodes, setExpandedTreeNodes] = useState<Set<string>>(new Set(['HS', 'PS4']));
 
   // Data
   const [questions, setQuestions] = useState<Question[]>(MOCK_QUESTIONS);
@@ -245,8 +481,10 @@ export const QuestionBank: React.FC = () => {
   const filteredTextbooks = MOCK_TEXTBOOKS.filter(t => {
       const matchSubject = filters.subject === 'All' || t.subject === filters.subject;
       const matchVersion = filters.version === 'All' || t.version === filters.version;
+      const matchType = filters.type === 'All' || t.type === filters.type;
+      const matchStage = filters.stage === 'All' || t.grade === filters.stage;
       const matchSearch = t.title.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchSubject && matchVersion && matchSearch;
+      return matchSubject && matchVersion && matchType && matchStage && matchSearch;
   });
 
   const toggleAnalysis = (id: string) => {
@@ -264,6 +502,13 @@ export const QuestionBank: React.FC = () => {
       }
   };
 
+  const toggleTreeNode = (id: string) => {
+      const newSet = new Set(expandedTreeNodes);
+      if (newSet.has(id)) newSet.delete(id);
+      else newSet.add(id);
+      setExpandedTreeNodes(newSet);
+  };
+
   const handleDelete = (id: string) => {
       if(confirm('确定删除该试题吗？')) setQuestions(questions.filter(q => q.id !== id));
   };
@@ -276,6 +521,38 @@ export const QuestionBank: React.FC = () => {
           setQuestions([{...editingQuestion as Question, id: `Q${Date.now()}`, createdAt: new Date().toISOString().split('T')[0]}, ...questions]);
       }
       setIsModalOpen(false);
+  };
+
+  const navigateToRelatedQuestions = (chapterTitle: string) => {
+      if (!selectedTextbook) return;
+
+      // Determine target stage based on textbook grade to switch context correctly
+      let targetStage = 'All';
+      const grade = selectedTextbook.grade;
+      if (grade.includes('Primary') || grade.match(/Grade [1-6]/)) {
+          targetStage = 'Primary School';
+      } else if (grade.includes('Middle') || grade.match(/Grade [7-9]/)) {
+          targetStage = 'Middle School';
+      } else if (grade.includes('High') || grade.match(/Grade 1[0-2]/)) {
+          targetStage = 'High School';
+      }
+
+      // Update filters to match the textbook's context
+      setFilters(prev => ({
+          ...prev,
+          subject: selectedTextbook.subject,
+          stage: targetStage,
+          type: 'All', // Reset type to show all relevant questions
+          difficulty: 'All' // Reset difficulty
+      }));
+
+      // Pre-fill search with the chapter title (or better, strip "第x讲" for better search)
+      const keyword = chapterTitle.replace(/^第\d+讲\s+/, '');
+      setSearchTerm(keyword);
+      
+      // Switch view back to questions list
+      setSelectedTextbook(null);
+      setActiveModule('questions');
   };
 
   const getFileIcon = (type: string) => {
@@ -305,6 +582,34 @@ export const QuestionBank: React.FC = () => {
       </div>
   );
 
+  // Recursive Tree Renderer
+  const renderTree = (nodes: any[], level = 0) => {
+      return nodes.map(node => (
+          <div key={node.id} className="mb-1">
+              <div 
+                  className={`flex items-center gap-2 px-3 py-2 rounded cursor-pointer transition-colors ${activeKnowledgeId === node.id ? 'bg-brand-50 text-brand-700 font-medium' : 'text-slate-600 hover:bg-slate-50'}`}
+                  style={{ paddingLeft: `${12 + level * 16}px` }}
+                  onClick={() => { 
+                      if(node.children) toggleTreeNode(node.id);
+                      else setActiveKnowledgeId(node.id);
+                  }}
+              >
+                  {node.children ? (
+                      <ChevronDown size={14} className={`transition-transform text-slate-400 ${expandedTreeNodes.has(node.id) ? '' : '-rotate-90'}`} />
+                  ) : (
+                      <div className="w-[14px]"></div>
+                  )}
+                  
+                  {node.children ? <Folder size={16} className={expandedTreeNodes.has(node.id) ? 'text-brand-500' : 'text-slate-400'}/> : <FileText size={16} className="text-slate-400"/>}
+                  <span className="truncate">{node.title}</span>
+              </div>
+              {node.children && expandedTreeNodes.has(node.id) && (
+                  <div>{renderTree(node.children, level + 1)}</div>
+              )}
+          </div>
+      ));
+  };
+
   return (
     <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-slate-50">
       
@@ -317,33 +622,10 @@ export const QuestionBank: React.FC = () => {
                 </h3>
             </div>
             <div className="flex-1 overflow-y-auto p-2">
-                <div className="text-xs font-bold text-slate-400 uppercase px-2 mb-2 tracking-wider">
-                    {filters.stage === 'All' ? 'High School' : filters.stage} · {filters.subject}
+                <div className="text-xs font-bold text-slate-400 uppercase px-3 mb-2 tracking-wider mt-2">
+                    学科知识体系
                 </div>
-                {KNOWLEDGE_TREE.map(node => (
-                    <div key={node.id} className="mb-1">
-                        <div 
-                            className={`flex items-center gap-2 px-3 py-2 rounded cursor-pointer transition-colors ${activeKnowledgeId === node.id ? 'bg-brand-50 text-brand-700 font-medium' : 'text-slate-600 hover:bg-slate-50'}`}
-                            onClick={() => setActiveKnowledgeId(node.id)}
-                        >
-                            <Folder size={16} className={activeKnowledgeId === node.id ? 'text-brand-500 fill-brand-100' : 'text-slate-400'}/>
-                            <span className="truncate">{node.title}</span>
-                        </div>
-                        {node.children && (
-                            <div className="pl-6 border-l border-slate-100 ml-3 mt-1 space-y-1">
-                                {node.children.map(child => (
-                                    <div 
-                                        key={child.id} 
-                                        onClick={() => setActiveKnowledgeId(child.id)}
-                                        className={`text-sm py-1 px-2 rounded cursor-pointer ${activeKnowledgeId === child.id ? 'text-brand-600 bg-brand-50' : 'text-slate-500 hover:text-slate-800'}`}
-                                    >
-                                        {child.title}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                ))}
+                {renderTree(KNOWLEDGE_TREE)}
             </div>
         </div>
       )}
@@ -499,11 +781,35 @@ export const QuestionBank: React.FC = () => {
                   {activeModule === 'textbooks' && (
                       <>
                         <FilterRow 
+                            label="学段" 
+                            value={filters.stage} 
+                            onChange={(v) => setFilters({...filters, stage: v})}
+                            options={[
+                                {label: '全部', value: 'All'},
+                                {label: '高中', value: 'High School'},
+                                {label: '初中', value: 'Middle School'},
+                                {label: '小学', value: 'Primary School'}
+                            ]}
+                        />
+                        <FilterRow 
+                            label="类型" 
+                            value={filters.type} 
+                            onChange={(v) => setFilters({...filters, type: v})}
+                            options={[
+                                {label: '全部', value: 'All'},
+                                {label: '导引(Guide)', value: 'Guide'},
+                                {label: '课本(Textbook)', value: 'Textbook'},
+                                {label: '练习册', value: 'Workbook'},
+                                {label: '微课', value: 'MicroClass'}
+                            ]}
+                        />
+                        <FilterRow 
                             label="版本" 
                             value={filters.version} 
                             onChange={(v) => setFilters({...filters, version: v})}
                             options={[
                                 {label: '全部', value: 'All'},
+                                {label: '高思版', value: '高思版'},
                                 {label: '人教版', value: '人教版'},
                                 {label: '北师大版', value: '北师大版'},
                                 {label: '苏教版', value: '苏教版'},
@@ -538,6 +844,7 @@ export const QuestionBank: React.FC = () => {
                                             ))}
                                         </span>
                                         <span className="text-slate-400 px-2 border-l border-slate-200">{q.source || '校本题库'}</span>
+                                        {q.grade === 'Primary School' && <span className="bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">小学</span>}
                                     </div>
                                     
                                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -678,9 +985,10 @@ export const QuestionBank: React.FC = () => {
                                     <div className="flex items-center justify-between pt-3 border-t border-slate-100">
                                         <span className={`text-xs px-2 py-0.5 rounded ${
                                             tb.type === 'Guide' ? 'bg-emerald-50 text-emerald-700' : 
+                                            tb.type === 'Textbook' ? 'bg-blue-50 text-blue-700' :
                                             tb.type === 'MicroClass' ? 'bg-purple-50 text-purple-700' : 'bg-amber-50 text-amber-700'
                                         }`}>
-                                            {tb.type === 'MicroClass' ? '微课视频' : tb.type === 'Guide' ? '教材解读' : '同步练习'}
+                                            {tb.type === 'MicroClass' ? '微课视频' : tb.type === 'Guide' ? '教材解读' : tb.type === 'Textbook' ? '课本' : '同步练习'}
                                         </span>
                                         <button className="text-brand-600 hover:text-brand-700 text-sm font-medium">查看详情</button>
                                     </div>
@@ -807,9 +1115,21 @@ export const QuestionBank: React.FC = () => {
                           {selectedTextbook.chapters && selectedTextbook.chapters.length > 0 ? (
                               selectedTextbook.chapters.map((chapter, idx) => (
                                   <div key={idx} className="border border-slate-200 rounded-xl overflow-hidden">
-                                      <div className="bg-slate-50 px-4 py-3 font-bold text-slate-700 border-b border-slate-100 flex justify-between items-center">
-                                          {chapter.title}
-                                          <span className="text-xs font-normal text-slate-400">{chapter.resources.length} 个资源</span>
+                                      <div className="bg-slate-50 px-4 py-3 font-bold text-slate-700 border-b border-slate-100 flex justify-between items-center flex-wrap gap-2">
+                                          <span>{chapter.title}</span>
+                                          <div className="flex items-center gap-3">
+                                              {chapter.knowledgePoints && chapter.knowledgePoints.length > 0 && (
+                                                  <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded border border-slate-200 hidden sm:inline-block">
+                                                      关联知识点: {chapter.knowledgePoints.join(', ')}
+                                                  </span>
+                                              )}
+                                              <button 
+                                                onClick={() => navigateToRelatedQuestions(chapter.title)}
+                                                className="text-xs flex items-center gap-1 bg-brand-50 text-brand-600 px-2 py-1.5 rounded border border-brand-100 hover:bg-brand-100 transition-colors font-normal"
+                                              >
+                                                  <Database size={12}/> 查看相关试题
+                                              </button>
+                                          </div>
                                       </div>
                                       <div className="divide-y divide-slate-100">
                                           {chapter.resources.map(res => (

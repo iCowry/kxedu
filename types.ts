@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 // --- ROLE DEFINITIONS ---
@@ -409,6 +408,7 @@ export interface TextbookChapter {
   id: string;
   title: string;
   resources: TextbookChapterResource[];
+  knowledgePoints?: string[]; // Linked knowledge points for this chapter
 }
 
 export interface TextbookResource {
@@ -416,8 +416,8 @@ export interface TextbookResource {
   title: string;
   subject: string;
   grade: string;
-  version: string; // e.g. 人教版, 北师大版
-  type: 'Guide' | 'Workbook' | 'MicroClass'; // 教材解读 / 练习册 / 微课
+  version: string; // e.g. 人教版, 北师大版, 高思版
+  type: 'Guide' | 'Workbook' | 'MicroClass' | 'Textbook'; // 教材解读 / 练习册 / 微课 / 课本
   author: string;
   downloadCount: number;
   // Extended fields
