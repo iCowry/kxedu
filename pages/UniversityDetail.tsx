@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, MapPin, Award, BookOpen, FlaskConical, Users, Globe, Phone, History, TrendingUp, Edit2, Plus, Trash2, X, Save, Filter, FileSpreadsheet, Clipboard, RefreshCw, Upload } from 'lucide-react';
@@ -277,10 +278,10 @@ export const UniversityDetail: React.FC = () => {
     <div className="p-8 space-y-6">
       {/* Breadcrumb / Back */}
       <div className="flex items-center gap-2 mb-4">
-        <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-500">
+        <button onClick={() => navigate('/universities')} className="p-2 hover:bg-slate-100 rounded-lg text-slate-500">
           <ChevronLeft size={20} />
         </button>
-        <span className="text-slate-500">/ 院校排行 / 大学详情</span>
+        <span className="text-slate-500">/ 大学信息库 / 大学详情</span>
       </div>
 
       {/* Header Profile Card */}

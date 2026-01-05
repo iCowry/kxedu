@@ -83,9 +83,12 @@ const App: React.FC = () => {
             <Route path="/organization" element={<ClassManagement />} />
             <Route path="/organization/class/:id" element={<ClassDetail />} /> 
             
-            <Route path="/rankings" element={<Rankings />} /> 
-            <Route path="/rankings/university/:id" element={<UniversityDetail />} />
-            <Route path="/rankings/highschool/:id" element={<HighSchoolDetail />} />
+            {/* Separate Routes for Universities and High Schools */}
+            <Route path="/universities" element={<Rankings view="universities" />} />
+            <Route path="/universities/:id" element={<UniversityDetail />} />
+            
+            <Route path="/highschools" element={<Rankings view="highschools" />} />
+            <Route path="/highschools/:id" element={<HighSchoolDetail />} />
 
             <Route path="/competitions" element={<CompetitionPlanning />} />
 

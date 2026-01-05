@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
-import { Search, MapPin, BookOpen, TrendingUp, GraduationCap, Filter, FlaskConical, Star, Book, Microscope } from 'lucide-react';
+
+import React, { useState, useMemo, useEffect } from 'react';
+import { Search, MapPin, BookOpen, TrendingUp, GraduationCap, Filter, FlaskConical, Star, Book, Microscope, School, Landmark } from 'lucide-react';
 import { University, HighSchool } from '../types';
 import { useNavigate } from 'react-router-dom';
 
@@ -238,9 +239,20 @@ const generateSubjectRankings = (subject: string): SubjectRankingItem[] => {
 
 const AVAILABLE_CITIES = Object.keys(HS_DATA_SOURCE);
 
-export const Rankings: React.FC = () => {
+interface RankingsProps {
+  view?: 'universities' | 'highschools';
+}
+
+export const Rankings: React.FC<RankingsProps> = ({ view = 'universities' }) => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'universities' | 'subjects' | 'highschools'>('universities');
+  // Default tab logic based on view
+  const defaultTab = view === 'highschools' ? 'highschools' : 'universities';
+  const [activeTab, setActiveTab] = useState<'universities' | 'subjects' | 'highschools'>(defaultTab);
+  
+  useEffect(() => {
+    setActiveTab(view === 'highschools' ? 'highschools' : 'universities');
+  }, [view]);
+
   const [selectedCity, setSelectedCity] = useState<string>('杭州');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -277,8 +289,12 @@ export const Rankings: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">院校排行 Rankings</h1>
-          <p className="text-slate-500 mt-1">权威教育资源数据库与升学参考。</p>
+          <h1 className="text-2xl font-bold text-slate-900">
+            {view === 'universities' ? '大学信息库 University Database' : '高中信息库 High School Database'}
+          </h1>
+          <p className="text-slate-500 mt-1">
+            {view === 'universities' ? '权威高校名录、学科评估与专业排名。' : '重点高中名录、升学率与办学特色。'}
+          </p>
         </div>
       </div>
 
@@ -286,30 +302,36 @@ export const Rankings: React.FC = () => {
       <div className="flex flex-col xl:flex-row gap-4 justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         {/* Tab Switcher */}
         <div className="flex p-1 bg-slate-100 rounded-lg overflow-x-auto max-w-full">
-           <button 
-             onClick={() => setActiveTab('universities')}
-             className={`px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'universities' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-           >
-             <div className="flex items-center gap-2">
-               <GraduationCap size={16}/> 全国高校 Top 100
-             </div>
-           </button>
-           <button 
-             onClick={() => setActiveTab('subjects')}
-             className={`px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'subjects' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-           >
-             <div className="flex items-center gap-2">
-               <Microscope size={16}/> 学科评估排名
-             </div>
-           </button>
-           <button 
-             onClick={() => setActiveTab('highschools')}
-             className={`px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'highschools' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-           >
-             <div className="flex items-center gap-2">
-               <BookOpen size={16}/> 重点高中榜单
-             </div>
-           </button>
+           {view === 'universities' && (
+             <>
+               <button 
+                 onClick={() => setActiveTab('universities')}
+                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'universities' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+               >
+                 <div className="flex items-center gap-2">
+                   <Landmark size={16}/> 全国高校 Top 100
+                 </div>
+               </button>
+               <button 
+                 onClick={() => setActiveTab('subjects')}
+                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'subjects' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+               >
+                 <div className="flex items-center gap-2">
+                   <Microscope size={16}/> 学科评估排名
+                 </div>
+               </button>
+             </>
+           )}
+           {view === 'highschools' && (
+             <button 
+               onClick={() => setActiveTab('highschools')}
+               className={`px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'highschools' ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+             >
+               <div className="flex items-center gap-2">
+                 <School size={16}/> 重点高中榜单
+               </div>
+             </button>
+           )}
         </div>
 
         {/* Filters */}
@@ -389,7 +411,7 @@ export const Rankings: React.FC = () => {
                 <tr 
                   key={uni.rank} 
                   className="hover:bg-slate-50 transition-colors group cursor-pointer"
-                  onClick={() => navigate(`/rankings/university/${uni.rank}`)}
+                  onClick={() => navigate(`/universities/${uni.rank}`)}
                 >
                   <td className="px-6 py-4 text-center">
                     <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${
@@ -538,7 +560,7 @@ export const Rankings: React.FC = () => {
                 <tr 
                   key={hs.rank} 
                   className="hover:bg-slate-50 transition-colors cursor-pointer"
-                  onClick={() => navigate(`/rankings/highschool/${hs.rank}`)}
+                  onClick={() => navigate(`/highschools/${hs.rank}`)}
                 >
                   <td className="px-6 py-4 text-center">
                      <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${
