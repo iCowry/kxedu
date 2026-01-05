@@ -28,7 +28,70 @@ import { QuestionBank } from './pages/QuestionBank';
 import { TeachingSupport } from './pages/TeachingSupport';
 import { Sports } from './pages/Sports';
 import { AIChatBot } from './components/AIChatBot';
-import { CurrentUser, UserRole } from './types';
+import { CurrentUser, UserRole, Tenant } from './types';
+
+// --- MOCK TENANT HIERARCHY DATA ---
+const MOCK_HIERARCHICAL_TENANTS: Tenant[] = [
+  {
+    id: 'G001',
+    name: '未来教育集团 (总部)',
+    type: 'Group',
+    plan: 'Enterprise',
+    status: 'Active',
+    studentCount: 15000,
+    renewalDate: '2026-01-01',
+    children: [
+      {
+        id: 'G001-R1',
+        name: '华东大区',
+        type: 'Group',
+        plan: 'Enterprise',
+        status: 'Active',
+        studentCount: 8000,
+        renewalDate: '2026-01-01',
+        parentId: 'G001',
+        children: [
+          { id: 'T001', name: '上海未来国际学校', type: 'School', parentId: 'G001-R1', plan: 'Enterprise', status: 'Active', studentCount: 3500, renewalDate: '2026-01-01' },
+          { id: 'T002', name: '杭州未来双语小学', type: 'School', parentId: 'G001-R1', plan: 'Pro', status: 'Active', studentCount: 1200, renewalDate: '2025-06-01' },
+        ]
+      },
+      {
+        id: 'G001-R2',
+        name: '华北大区',
+        type: 'Group',
+        plan: 'Enterprise',
+        status: 'Active',
+        studentCount: 4000,
+        renewalDate: '2026-01-01',
+        parentId: 'G001',
+        children: [
+          { id: 'T003', name: '北京未来艺术高中', type: 'School', parentId: 'G001-R2', plan: 'Pro', status: 'Active', studentCount: 800, renewalDate: '2025-09-01' },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'G002',
+    name: '博雅教育联盟',
+    type: 'Group',
+    plan: 'Pro',
+    status: 'Active',
+    studentCount: 5000,
+    renewalDate: '2025-12-31',
+    children: [
+      { id: 'T004', name: '博雅实验中学', type: 'School', parentId: 'G002', plan: 'Pro', status: 'Active', studentCount: 2000, renewalDate: '2025-12-31' }
+    ]
+  },
+  {
+    id: 'T005',
+    name: '独立示范小学',
+    type: 'School',
+    plan: 'Basic',
+    status: 'Active',
+    studentCount: 600,
+    renewalDate: '2024-12-31',
+  }
+];
 
 const App: React.FC = () => {
   // Global User State for RBAC Demo
@@ -38,6 +101,10 @@ const App: React.FC = () => {
     role: 'SuperAdmin',
     avatar: 'A'
   });
+
+  // Global Tenant State (Context)
+  // Default to a school within a region for realistic context
+  const [currentTenant, setCurrentTenant] = useState<Tenant>(MOCK_HIERARCHICAL_TENANTS[0].children![0].children![0]);
 
   const handleSwitchRole = (role: UserRole) => {
     let newUser: CurrentUser = { id: 'U-001', name: 'User', role: role, avatar: 'U' };
@@ -67,11 +134,23 @@ const App: React.FC = () => {
     setCurrentUser(newUser);
   };
 
+  const handleSwitchTenant = (tenant: Tenant) => {
+    setCurrentTenant(tenant);
+    // In a real app, this would trigger data refetching for the new tenant context
+    console.log(`Switched to tenant: ${tenant.name} (${tenant.id})`);
+  };
+
   return (
     <Router>
       <div className="flex h-screen bg-slate-50">
-        {/* Pass user and switch handler to Sidebar */}
-        <Sidebar currentUser={currentUser} onSwitchRole={handleSwitchRole} />
+        {/* Pass user, tenant context, and handlers to Sidebar */}
+        <Sidebar 
+          currentUser={currentUser} 
+          onSwitchRole={handleSwitchRole} 
+          currentTenant={currentTenant}
+          availableTenants={MOCK_HIERARCHICAL_TENANTS}
+          onSwitchTenant={handleSwitchTenant}
+        />
         
         <main className="flex-1 ml-64 overflow-y-auto">
           <Routes>

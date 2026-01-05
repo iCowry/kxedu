@@ -1,13 +1,14 @@
+
 import React, { useState } from 'react';
-import { Search, Filter, MoreHorizontal, Plus, CheckCircle, XCircle, ChevronLeft, ChevronRight, X, School, Calendar, User, Mail } from 'lucide-react';
+import { Search, Filter, MoreHorizontal, Plus, CheckCircle, XCircle, ChevronLeft, ChevronRight, X, School, Calendar, User, Mail, Building2, Users } from 'lucide-react';
 import { Tenant } from '../types';
 
 const INITIAL_TENANTS: Tenant[] = [
-  { id: 'T001', name: '育才实验中学', plan: 'Enterprise', status: 'Active', studentCount: 2400, renewalDate: '2026-09-01' },
-  { id: 'T002', name: '春蕾小学', plan: 'Basic', status: 'Active', studentCount: 850, renewalDate: '2025-12-31' },
-  { id: 'T003', name: '高新第一高中', plan: 'Pro', status: 'Inactive', studentCount: 1200, renewalDate: '2024-11-15' },
-  { id: 'T004', name: '未来国际学校', plan: 'Enterprise', status: 'Active', studentCount: 3500, renewalDate: '2026-06-30' },
-  { id: 'T005', name: '博雅艺术学院', plan: 'Pro', status: 'Active', studentCount: 600, renewalDate: '2025-08-20' },
+  { id: 'T001', name: '育才实验中学', type: 'School', plan: 'Enterprise', status: 'Active', studentCount: 2400, renewalDate: '2026-09-01' },
+  { id: 'T002', name: '春蕾小学', type: 'School', plan: 'Basic', status: 'Active', studentCount: 850, renewalDate: '2025-12-31' },
+  { id: 'T003', name: '高新第一高中', type: 'School', plan: 'Pro', status: 'Inactive', studentCount: 1200, renewalDate: '2024-11-15' },
+  { id: 'G001', name: '未来教育集团', type: 'Group', plan: 'Enterprise', status: 'Active', studentCount: 5500, renewalDate: '2026-06-30' },
+  { id: 'T005', name: '博雅艺术学院', type: 'School', plan: 'Pro', status: 'Active', studentCount: 600, renewalDate: '2025-08-20' },
 ];
 
 export const TenantList: React.FC = () => {
@@ -19,6 +20,7 @@ export const TenantList: React.FC = () => {
   // New Tenant Form State
   const [newTenant, setNewTenant] = useState<Partial<Tenant>>({
     name: '',
+    type: 'School',
     plan: 'Pro',
     status: 'Active',
     studentCount: 0,
@@ -35,6 +37,7 @@ export const TenantList: React.FC = () => {
     const tenant: Tenant = {
       id: `T${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
       name: newTenant.name || 'New School',
+      type: newTenant.type as any,
       plan: newTenant.plan as any,
       status: newTenant.status as any,
       studentCount: Number(newTenant.studentCount),
@@ -46,6 +49,7 @@ export const TenantList: React.FC = () => {
     // Reset form
     setNewTenant({
       name: '',
+      type: 'School',
       plan: 'Pro',
       status: 'Active',
       studentCount: 0,
@@ -94,6 +98,7 @@ export const TenantList: React.FC = () => {
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">租户名称</th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">类型</th>
                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">订阅方案</th>
                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">状态</th>
                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">学生规模</th>
@@ -106,14 +111,19 @@ export const TenantList: React.FC = () => {
                 <tr key={tenant.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center">
-                      <div className="w-8 h-8 rounded bg-brand-100 text-brand-600 flex items-center justify-center font-bold mr-3">
-                        {tenant.name[0]}
+                      <div className={`w-8 h-8 rounded flex items-center justify-center font-bold mr-3 ${tenant.type === 'Group' ? 'bg-indigo-100 text-indigo-600' : 'bg-brand-100 text-brand-600'}`}>
+                        {tenant.type === 'Group' ? <Building2 size={16}/> : <School size={16}/>}
                       </div>
                       <div>
                         <div className="font-medium text-slate-900">{tenant.name}</div>
                         <div className="text-xs text-slate-500">ID: {tenant.id}</div>
                       </div>
                     </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-1 rounded text-xs font-medium border ${tenant.type === 'Group' ? 'bg-indigo-50 text-indigo-700 border-indigo-100' : 'bg-slate-50 text-slate-700 border-slate-200'}`}>
+                        {tenant.type === 'Group' ? '教育集团' : '独立校区'}
+                    </span>
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -218,6 +228,19 @@ export const TenantList: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                    租户类型
+                  </label>
+                  <select 
+                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                    value={newTenant.type}
+                    onChange={e => setNewTenant({...newTenant, type: e.target.value as any})}
+                  >
+                    <option value="School">独立校区</option>
+                    <option value="Group">教育集团</option>
+                  </select>
+                </div>
+                <div>
+                   <label className="block text-sm font-medium text-slate-700 mb-1">
                     订阅方案
                   </label>
                   <select 
@@ -229,6 +252,20 @@ export const TenantList: React.FC = () => {
                     <option value="Pro">Pro (专业版)</option>
                     <option value="Enterprise">Enterprise (企业版)</option>
                   </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                   <label className="block text-sm font-medium text-slate-700 mb-1">
+                    <div className="flex items-center gap-1.5"><Users size={16}/> 预计学生数</div>
+                  </label>
+                  <input 
+                    type="number" 
+                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    value={newTenant.studentCount}
+                    onChange={e => setNewTenant({...newTenant, studentCount: Number(e.target.value)})}
+                  />
                 </div>
                 <div>
                    <label className="block text-sm font-medium text-slate-700 mb-1">

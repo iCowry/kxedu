@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 // --- ROLE DEFINITIONS ---
@@ -23,10 +24,13 @@ export interface CurrentUser {
 export interface Tenant {
   id: string;
   name: string;
+  type: 'Group' | 'School'; // New: Distinguish between Group and School
   plan: 'Basic' | 'Pro' | 'Enterprise';
   status: 'Active' | 'Inactive';
   studentCount: number;
   renewalDate: string;
+  parentId?: string; // New: Link to parent
+  children?: Tenant[]; // New: Nested children for hierarchy
 }
 
 export interface Student {
